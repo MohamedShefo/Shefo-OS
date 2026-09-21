@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Project, ProjectStatus } from '@/types/database';
 import { ProjectCard } from './project-card';
+import { EmptyState } from '@/components/common/empty-state';
 
 interface ProjectListProps {
   initialProjects: Project[];
@@ -18,12 +19,10 @@ export function ProjectList({ initialProjects }: ProjectListProps) {
 
   if (initialProjects.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-center rounded-xl border border-dashed border-border bg-card/50">
-        <p className="text-sm font-medium text-muted-foreground">No projects yet.</p>
-        <p className="text-xs text-muted-foreground/70 mt-1">
-          Click &quot;+ New Project&quot; to organize your outcomes.
-        </p>
-      </div>
+      <EmptyState
+        title="No projects yet."
+        description='Click "+ New Project" to organize your outcomes.'
+      />
     );
   }
 

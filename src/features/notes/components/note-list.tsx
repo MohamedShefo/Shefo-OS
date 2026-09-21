@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import { Note, Project } from '@/types/database';
 import { NoteCard } from './note-card';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { EmptyState } from '@/components/common/empty-state';
 
 interface NoteListProps {
   initialNotes: Note[];
@@ -38,12 +41,10 @@ export function NoteList({ initialNotes, projects }: NoteListProps) {
 
   if (initialNotes.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-center rounded-xl border border-dashed border-border bg-card/50">
-        <p className="text-sm font-medium text-muted-foreground">No notes or knowledge items yet.</p>
-        <p className="text-xs text-muted-foreground/70 mt-1">
-          Click &quot;+ New Note&quot; to capture structured knowledge and ideas.
-        </p>
-      </div>
+      <EmptyState
+        title="No notes or knowledge items yet."
+        description='Click "+ New Note" to capture structured knowledge and ideas.'
+      />
     );
   }
 
@@ -51,18 +52,18 @@ export function NoteList({ initialNotes, projects }: NoteListProps) {
     <div className="space-y-4">
       {/* Search & Project Filter Controls */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 border-b border-border pb-4">
-        <input
+        <Input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search notes by title, content, or #tags..."
-          className="flex-1 rounded-md border border-input bg-background px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-ring/20"
+          className="flex-1 text-xs"
         />
 
-        <select
+        <Select
           value={selectedProjectId}
           onChange={(e) => setSelectedProjectId(e.target.value)}
-          className="rounded-md border border-input bg-background px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-ring/20"
+          className="w-full sm:w-48 text-xs"
         >
           <option value="all">All Projects</option>
           {projects.map((p) => (
@@ -70,7 +71,7 @@ export function NoteList({ initialNotes, projects }: NoteListProps) {
               📁 {p.name}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       {/* Grid */}

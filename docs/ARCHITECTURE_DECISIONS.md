@@ -146,3 +146,18 @@ This document records the foundational architectural decisions approved for **Sh
      - `task_priority`: `'low'`, `'medium'`, `'high'`
   2. Next.js 16 uses `src/proxy.ts` for Edge Middleware session handling. `proxy.ts` delegates to `updateSession` from `@/utils/supabase/middleware`.
 
+---
+
+## ADR-017: Phase 2 Core + Shell Foundation Architecture
+
+- **Status**: Approved (Phase 2 Baseline)
+- **Context**: Shefo OS requires a unified application shell, centralized navigation, shared visual design tokens, and lightweight shared domain contracts without over-architecting or decoupling existing Server Actions.
+- **Decision**:
+  1. **Minimal Domain Contracts**: Standardize `EntityType` and `EntityRef` in `src/types/domain.ts`. Maintain existing module types in `src/types/database.ts`.
+  2. **Database Type Generation**: Introduce `npm run db:types` (`npx supabase gen types typescript --local > src/types/database.ts`) anchored to the Supabase PostgreSQL schema.
+  3. **Centralized Application Shell & Navigation**: Route definitions managed in `src/config/navigation.ts`. Pages use `AppShell` with desktop `Sidebar` and mobile drawer `Header`.
+  4. **Shared UI Primitives**: Standardize high-value primitives (`Input`, `Select`, `Badge`, `Card`, `Dialog`, `PageHeader`, `EmptyState`, `LoadingState`) while preserving direct Server Action mutations.
+  5. **Black-First Personal Brand Design Tokens**: Theme variables centralized in `globals.css` with semantic color tokens (`--surface`, `--success`, `--warning`, `--danger`).
+  6. **Lifecycle Semantics**: Define `EntityLifecycleState` (`active` | `archived` | `trash` | `restored` | `deleted`) and `TRASH_RETENTION_DAYS = 30` in `src/types/lifecycle.ts`.
+
+

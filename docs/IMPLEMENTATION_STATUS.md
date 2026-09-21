@@ -1,18 +1,21 @@
-# Shefo OS — Implementation Status (Phase 1 Baseline)
+# Shefo OS — Implementation Status (Phase 2 Baseline)
 
-## Module Status Overview
+## Module & Foundation Status Overview
 
-| Module / Component | State | Test/Build Status | Notes / Phase 1 Fixes |
+| Module / Component | State | Build/Lint Status | Notes & Phase 2 Architecture |
 | :--- | :--- | :--- | :--- |
-| **Database Schema** | Complete | Migrated (`0000_schema.sql`) | PostgreSQL ENUMs, triggers, indexes, and RLS policies active. |
-| **Auth & SSR** | Complete | Operational | `@supabase/ssr` with Email/Password auth, middleware session update. Unused `options`/`error` variables cleaned up. |
-| **Command Center (Dashboard)** | Functional | Build & Lint OK | 2x2 metric overview grid, inline fast capture. Safe tag normalization (`normalizeTags`) implemented. |
-| **Quick Capture Inbox** | Functional | Build & Lint OK | Enter to capture, instant optimistic reset, soft-delete archive. |
-| **Notes & Concepts** | Functional | Build & Lint OK | Markdown support, tags, project relation, soft-delete. `any` replaced with `Record<string, unknown>`. Unescaped quotes fixed. |
-| **Projects Tracker** | Functional | Build & Lint OK | Status filter (active/paused/archived), project creation dialog, status updates, soft-delete. Unescaped quotes fixed. |
-| **Tasks Tracker** | Functional | Build & Lint OK | Status filter, priority filter, due date, project relation, checkbox toggle, soft-delete. Unescaped quotes fixed. |
-| **Shared Helpers** | Functional | Build & Lint OK | `src/lib/utils.ts` exports `cn` and `normalizeTags`. |
-| **Type System** | Hand-crafted | TypeScript OK | `src/types/database.ts` matches DB schema. `npx tsc --noEmit` passes with 0 errors. |
+| **Application Shell** | Complete | Build OK | `AppShell`, `Sidebar` (desktop), `Header` (mobile drawer). |
+| **Navigation Registry** | Complete | Build OK | `src/config/navigation.ts` centralizes all 5 core routes. |
+| **Domain Contracts** | Complete | TypeScript OK | `src/types/domain.ts` defines `EntityType` & `EntityRef`. |
+| **Lifecycle Semantics** | Complete | TypeScript OK | `src/types/lifecycle.ts` defines `EntityLifecycleState` & `TRASH_RETENTION_DAYS`. |
+| **Database Type Script** | Complete | Script Ready | `npm run db:types` configured in `package.json`. |
+| **UI Primitives** | Complete | Build OK | `Input`, `Select`, `Badge`, `Card`, `Dialog`, `PageHeader`, `EmptyState`, `LoadingState`. |
+| **Design Tokens** | Complete | Build OK | Black-first tokens in `globals.css` (`--surface`, `--success`, `--warning`, `--danger`). |
+| **Command Center (Dashboard)** | Complete | Operational | Rendered inside `AppShell` with `PageHeader` & safe tag normalization. |
+| **Quick Capture** | Complete | Operational | Rendered inside `AppShell` with `PageHeader` & `EmptyState`. |
+| **Notes & Concepts** | Complete | Operational | Rendered inside `AppShell` with `PageHeader`, `Input`, `Select`, `EmptyState`. |
+| **Projects Tracker** | Complete | Operational | Rendered inside `AppShell` with `PageHeader` & `EmptyState`. |
+| **Tasks Tracker** | Complete | Operational | Rendered inside `AppShell` with `PageHeader`, `Select`, & `EmptyState`. |
 
 ---
 
@@ -20,5 +23,5 @@
 
 - **TypeScript (`npx tsc --noEmit`)**: PASSED (0 errors).
 - **ESLint (`npm run lint`)**: PASSED (0 errors, 0 warnings).
-- **Next.js Build (`npm run build`)**: PASSED (Turbopack production build compiled successfully).
-- **CRUD Operations**: All server action mutations maintain `revalidatePath` and soft-delete filters.
+- **Next.js Build (`npm run build`)**: PASSED (Next.js 16.3.4 Turbopack production build OK).
+- **CRUD Operations**: Preserved without altering Server Actions or DDL constraints.

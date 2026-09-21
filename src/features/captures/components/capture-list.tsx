@@ -4,6 +4,8 @@ import { useTransition } from 'react';
 import { Capture } from '@/types/database';
 import { deleteCapture } from '../actions';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/common/empty-state';
 
 interface CaptureListProps {
   initialCaptures: Capture[];
@@ -20,12 +22,10 @@ export function CaptureList({ initialCaptures }: CaptureListProps) {
 
   if (initialCaptures.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-center rounded-xl border border-dashed border-border bg-card/50">
-        <p className="text-sm font-medium text-muted-foreground">Your inbox is clear.</p>
-        <p className="text-xs text-muted-foreground/70 mt-1">
-          Use the capture box above to offload thoughts instantly.
-        </p>
-      </div>
+      <EmptyState
+        title="Your inbox is clear."
+        description="Use the capture box above to offload thoughts instantly."
+      />
     );
   }
 
@@ -34,9 +34,7 @@ export function CaptureList({ initialCaptures }: CaptureListProps) {
       <div className="flex items-center justify-between px-1">
         <h2 className="text-sm font-semibold tracking-tight text-foreground flex items-center gap-2">
           Unprocessed Inbox
-          <span className="inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium rounded-full bg-muted text-muted-foreground">
-            {initialCaptures.length}
-          </span>
+          <Badge variant="secondary">{initialCaptures.length}</Badge>
         </h2>
       </div>
 

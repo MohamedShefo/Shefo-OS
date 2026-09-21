@@ -8,6 +8,8 @@ import { getTasks } from '@/features/tasks/actions';
 import { CaptureInput } from '@/features/captures/components/capture-input';
 import { Button } from '@/components/ui/button';
 import { normalizeTags } from '@/lib/utils';
+import { AppShell } from '@/components/shell/app-shell';
+import { PageHeader } from '@/components/common/page-header';
 
 export const metadata = {
   title: 'Dashboard',
@@ -64,18 +66,13 @@ export default async function Home() {
   const topProjects = activeProjects.slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
-        {/* Top Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border pb-6">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-extrabold tracking-tight">Shefo OS Command Center</h1>
-            <p className="text-sm text-muted-foreground">
-              Welcome back, <span className="font-semibold text-foreground">{user.email}</span>
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2 flex-wrap">
+    <AppShell userEmail={user.email}>
+      {/* Top Header */}
+      <PageHeader
+        title="Shefo OS Command Center"
+        description={`Welcome back, ${user.email}`}
+        actions={
+          <>
             <Link href="/capture">
               <Button size="sm" variant="default">⚡ Capture</Button>
             </Link>
@@ -93,8 +90,9 @@ export default async function Home() {
                 Sign Out
               </Button>
             </form>
-          </div>
-        </div>
+          </>
+        }
+      />
 
         {/* Stats Metrics Row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -257,7 +255,6 @@ export default async function Home() {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+    </AppShell>
   );
 }

@@ -1,15 +1,12 @@
-# Shefo OS — AI Handoff & Audit Baseline
+# Shefo OS — AI Handoff & Baseline Documentation
 
 ## Executive Summary
-Shefo OS has completed **Phase 0 (Live Audit & Baseline)** and **Phase 1 (Stabilization & Safety Baseline)**. The repository is fully buildable, all TypeScript and ESLint checks pass with zero errors/warnings, and runtime tag parsing on the command center dashboard is fortified.
+Shefo OS has completed **Phase 0 (Live Audit)**, **Phase 1 (Stabilization)**, and **Phase 2 (Core + Shell Foundations)**. The application features a unified black-first personal brand shell layout (`AppShell`), centralized navigation config, shared UI primitives (`Input`, `Select`, `Badge`, `Card`, `Dialog`, `PageHeader`, `EmptyState`, `LoadingState`), minimal domain contracts (`EntityType`, `EntityRef`), lifecycle semantics (`TRASH_RETENTION_DAYS = 30`), and a registered `db:types` script.
 
 ---
 
-## 1. Current Repository State
+## 1. Current Repository Architecture
 
-Shefo OS is implemented as a **Next.js 16 (App Router)** application using **TypeScript**, **Tailwind CSS v4**, `@base-ui/react`, `@supabase/ssr`, and **Supabase (PostgreSQL + RLS)**.
-
-### Core Architecture & Structure
 ```
 shefo-os/
 ├── docs/
@@ -17,59 +14,71 @@ shefo-os/
 │   ├── IMPLEMENTATION_STATUS.md
 │   └── AI_HANDOFF.md
 ├── src/
-│   ├── app/                    # Next.js App Router (Dashboard, Capture, Notes, Projects, Tasks, Auth)
-│   ├── components/             # Shared UI components (ui/button.tsx, common/)
-│   ├── features/               # Feature domain modules (captures, notes, projects, tasks)
-│   ├── lib/                    # Shared utilities (utils.ts with normalizeTags helper)
-│   ├── proxy.ts                # Next.js 16 edge middleware session updater
-│   ├── types/                  # Database TypeScript interfaces (database.ts)
+│   ├── app/                    # Next.js App Router Pages (Dashboard, Capture, Notes, Projects, Tasks, Auth)
+│   ├── components/             
+│   │   ├── common/             # PageHeader, EmptyState, LoadingState
+│   │   ├── shell/              # AppShell, Sidebar, Header
+│   │   └── ui/                 # Button, Input, Select, Badge, Card, Dialog
+│   ├── config/
+│   │   └── navigation.ts       # Centralized navigation item registry
+│   ├── features/               # Domain feature modules (captures, notes, projects, tasks)
+│   ├── lib/                    # Shared utilities (cn, normalizeTags)
+│   ├── proxy.ts                # Next.js 16 Edge Middleware session updater
+│   ├── types/                  
+│   │   ├── database.ts         # Supabase database interfaces
+│   │   ├── domain.ts           # EntityType, EntityRef, CoreMetadata
+│   │   └── lifecycle.ts        # EntityLifecycleState, TRASH_RETENTION_DAYS, getLifecycleState
 │   └── utils/supabase/         # Supabase client/server/middleware factories
 ├── supabase/
-│   └── migrations/             # PostgreSQL database migrations (0000_schema.sql)
-├── package.json
+│   └── migrations/             # PostgreSQL DDL migrations (0000_schema.sql)
+├── package.json                # Includes "db:types" generation script
 └── tsconfig.json
 ```
 
 ---
 
-## 2. Phase 1 Stabilization Fixes Applied
+## 2. Phase 2 Architecture Added
 
-1. **Shared Tag Normalization Helper (`src/lib/utils.ts`)**:
-   - Centralized `normalizeTags(tags: unknown): string[]` to parse PostgreSQL array formats, JSON arrays, comma-separated strings, and null/undefined values safely into `string[]`.
-2. **Dashboard Tag Crash Prevention (`src/app/page.tsx`)**:
-   - Replaced direct `.map()` assumption on `n.tags` with `normalizeTags(n.tags)`, eliminating runtime crash risk on the Command Center dashboard.
-3. **ESLint Cleanup (100% Resolved)**:
-   - Fixed unescaped JSX characters in `src/app/login/page.tsx`, `src/features/notes/components/note-list.tsx`, `src/features/projects/components/project-list.tsx`, and `src/features/tasks/components/task-list.tsx`.
-   - Replaced explicit `any` with `Record<string, unknown>` in `src/features/notes/actions.ts`.
-   - Removed unused `options` parameter in `src/utils/supabase/middleware.ts` and unused `error` variable in `src/utils/supabase/server.ts`.
+1. **Shared Domain Contracts (`src/types/domain.ts`)**:
+   - `EntityType` (`capture` | `note` | `project` | `task` | `goal` | `learning`)
+   - `EntityRef` (`{ entityType: EntityType; entityId: string }`)
+   - `CoreMetadata` (`created_at`, `updated_at`, `deleted_at`)
+2. **Database Type Generation**:
+   - Script added to `package.json`: `"db:types": "npx supabase gen types typescript --local > src/types/database.ts"`.
+3. **Application Shell & Navigation (`src/components/shell/`, `src/config/navigation.ts`)**:
+   - Centralized navigation registry `NAV_ITEMS` covering Command Center, Quick Capture, Notes & Concepts, Projects, and Tasks.
+   - `AppShell` layout component combining desktop `Sidebar`, mobile drawer `Header`, and responsive page content container.
+4. **Shared UI Primitives & Common Components**:
+   - High-value primitives: `Input`, `Select`, `Badge`, `Card`, `Dialog`, `PageHeader`, `EmptyState`, `LoadingState`.
+5. **Design Tokens / Theme Foundation (`src/app/globals.css`)**:
+   - Personal brand: Black-first.
+   - Added semantic tokens: `--surface`, `--success`, `--warning`, `--danger`.
+6. **Lifecycle Semantics (`src/types/lifecycle.ts`)**:
+   - Defined `EntityLifecycleState` (`active` | `archived` | `trash` | `restored` | `deleted`) and default `TRASH_RETENTION_DAYS = 30`.
 
 ---
 
-## 3. Empirical Verification Results (Phase 1 Baseline)
+## 3. What Was Intentionally NOT Changed
 
-| Tool / Check | Command | Result |
+- **No Domain Service Layer / Repository Abstraction**: Server Actions remain the primary data mutation mechanism.
+- **No Schema Redesign**: Database tables, columns, and foreign keys remain untouched.
+- **No Premature Feature Modules**: Goals, Timer, Knowledge Graph, Journal, Analytics, AI, Export, and Offline sync were explicitly omitted.
+
+---
+
+## 4. Empirical Verification Results
+
+| Verification Check | Command | Result |
 | :--- | :--- | :--- |
 | **TypeScript Typecheck** | `npx tsc --noEmit` | **0 errors** |
 | **ESLint Check** | `npm run lint` | **0 errors, 0 warnings** |
 | **Production Build** | `npm run build` | **Compiled successfully (Turbopack, Next.js 16.3.4)** |
-| **CRUD & Auth Flow Audit** | Internal Action Verification | All server actions, revalidations, and soft-delete queries verified intact. |
-
----
-
-## 4. Known Knowns & Architecture Gaps (Baseline for Future Phases)
-
-- **Shared Core**: Needs standard response objects and unified error logging.
-- **Module Boundaries**: Domain logic resides inside Next.js Server Actions without a decoupled domain service layer.
-- **Data Contracts**: Types are manually typed in `src/types/database.ts` rather than generated automatically from Supabase CLI (`supabase gen types`).
-- **Relations**: Foreign keys exist in DDL, but inverse/relational lookup queries are missing.
-- **Lifecycle & Activity**: No audit log or event history recorded when thoughts are captured, converted, or completed.
-- **Design System**: UI relies on raw HTML inputs/selects with inline Tailwind classes instead of a cohesive reusable UI component system.
+| **Existing CRUD Audit** | Manual route & mutation review | Authentication, Capture, Notes, Projects, Tasks, and Dashboard CRUD fully functional. |
 
 ---
 
 ## 5. Next Recommended Phase
 
-**Phase 2: Core Refactoring & Modular Foundation**
-- Establish a clean shared core abstraction (`src/core/`).
-- Decouple domain services from Next.js server action handlers.
-- Standardize UI primitives (inputs, dialogs, selects, badges).
+**Phase 3: Sector & Entity Extensions (v2 Core Feature Set)**
+- Implement Goals and Learning sectors using the established `AppShell`, `PageHeader`, and UI primitives.
+- Introduce Trash retention lifecycle views.

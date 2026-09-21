@@ -6,6 +6,8 @@ import { getProjects } from '@/features/projects/actions';
 import { TaskList } from '@/features/tasks/components/task-list';
 import { CreateTaskDialog } from '@/features/tasks/components/create-task-dialog';
 import { Button } from '@/components/ui/button';
+import { AppShell } from '@/components/shell/app-shell';
+import { PageHeader } from '@/components/common/page-header';
 
 export const metadata = {
   title: 'Tasks',
@@ -25,31 +27,27 @@ export default async function TasksPage() {
   const [tasks, projects] = await Promise.all([getTasks(), getProjects()]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
-        {/* Navigation & Header */}
-        <div className="flex items-center justify-between border-b border-border pb-4">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-bold tracking-tight">Tasks</h1>
-            <p className="text-sm text-muted-foreground">
-              Manage your action items, due dates, and task priorities.
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
+    <AppShell userEmail={user.email}>
+      {/* Header */}
+      <PageHeader
+        title="Tasks"
+        description="Manage your action items, due dates, and task priorities."
+        actions={
+          <>
             <Link href="/">
               <Button variant="outline" size="sm">
                 Home
               </Button>
             </Link>
             <CreateTaskDialog projects={projects} />
-          </div>
-        </div>
+          </>
+        }
+      />
 
-        {/* Task List / Filter View */}
-        <section>
-          <TaskList initialTasks={tasks} projects={projects} />
-        </section>
-      </div>
-    </div>
+      {/* Task List / Filter View */}
+      <section>
+        <TaskList initialTasks={tasks} projects={projects} />
+      </section>
+    </AppShell>
   );
 }

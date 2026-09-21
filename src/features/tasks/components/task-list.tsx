@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { Task, Project, TaskStatus, TaskPriority } from '@/types/database';
 import { TaskItem } from './task-item';
+import { Select } from '@/components/ui/select';
+import { EmptyState } from '@/components/common/empty-state';
 
 interface TaskListProps {
   initialTasks: Task[];
@@ -28,12 +30,10 @@ export function TaskList({ initialTasks, projects }: TaskListProps) {
 
   if (initialTasks.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-center rounded-xl border border-dashed border-border bg-card/50">
-        <p className="text-sm font-medium text-muted-foreground">All tasks complete!</p>
-        <p className="text-xs text-muted-foreground/70 mt-1">
-          Click &quot;+ New Task&quot; to add your next action item.
-        </p>
-      </div>
+      <EmptyState
+        title="All tasks complete!"
+        description='Click "+ New Task" to add your next action item.'
+      />
     );
   }
 
@@ -60,21 +60,21 @@ export function TaskList({ initialTasks, projects }: TaskListProps) {
 
         {/* Priority & Project Selectors */}
         <div className="flex items-center gap-2">
-          <select
+          <Select
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value as 'all' | TaskPriority)}
-            className="rounded-md border border-input bg-background px-3 py-1 text-xs outline-none focus:ring-2 focus:ring-ring/20"
+            className="w-auto text-xs"
           >
             <option value="all">All Priorities</option>
             <option value="high">High Priority</option>
             <option value="medium">Medium Priority</option>
             <option value="low">Low Priority</option>
-          </select>
+          </Select>
 
-          <select
+          <Select
             value={selectedProjectId}
             onChange={(e) => setSelectedProjectId(e.target.value)}
-            className="rounded-md border border-input bg-background px-3 py-1 text-xs outline-none focus:ring-2 focus:ring-ring/20"
+            className="w-auto text-xs"
           >
             <option value="all">All Projects</option>
             {projects.map((p) => (
@@ -82,7 +82,7 @@ export function TaskList({ initialTasks, projects }: TaskListProps) {
                 📁 {p.name}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
       </div>
 

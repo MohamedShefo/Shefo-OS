@@ -6,6 +6,8 @@ import { getProjects } from '@/features/projects/actions';
 import { NoteList } from '@/features/notes/components/note-list';
 import { CreateNoteDialog } from '@/features/notes/components/create-note-dialog';
 import { Button } from '@/components/ui/button';
+import { AppShell } from '@/components/shell/app-shell';
+import { PageHeader } from '@/components/common/page-header';
 
 export const metadata = {
   title: 'Notes & Concepts',
@@ -25,31 +27,27 @@ export default async function NotesPage() {
   const [notes, projects] = await Promise.all([getNotes(), getProjects()]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
-        {/* Navigation & Header */}
-        <div className="flex items-center justify-between border-b border-border pb-4">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-bold tracking-tight">Notes & Concepts</h1>
-            <p className="text-sm text-muted-foreground">
-              Externalize knowledge, meeting notes, and core concepts.
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
+    <AppShell userEmail={user.email}>
+      {/* Header */}
+      <PageHeader
+        title="Notes & Concepts"
+        description="Externalize knowledge, meeting notes, and core concepts."
+        actions={
+          <>
             <Link href="/">
               <Button variant="outline" size="sm">
                 Home
               </Button>
             </Link>
             <CreateNoteDialog projects={projects} />
-          </div>
-        </div>
+          </>
+        }
+      />
 
-        {/* Note List / Grid */}
-        <section>
-          <NoteList initialNotes={notes} projects={projects} />
-        </section>
-      </div>
-    </div>
+      {/* Note List / Grid */}
+      <section>
+        <NoteList initialNotes={notes} projects={projects} />
+      </section>
+    </AppShell>
   );
 }

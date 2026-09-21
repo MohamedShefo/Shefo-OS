@@ -19,6 +19,7 @@
 | **Notes & Concepts** | Complete | Build OK | Rendered inside `AppShell` with `PageHeader`, `Input`, `Select`, `EmptyState`. |
 | **Projects Tracker** | Complete | Build OK | Rendered inside `AppShell` with `PageHeader` & `EmptyState`. |
 | **Tasks Tracker** | Complete | Build OK | Rendered inside `AppShell` with `PageHeader`, `Select`, & `EmptyState`. |
+| **Trash Lifecycle View** | Complete (Phase 3 slice) | Build OK | `/trash` route in `AppShell` with `PageHeader`, entity filter tabs, `EmptyState`; `getTrashedItems` / `restoreItem` / `permanentlyDeleteItem` Server Actions in `src/features/trash/`; nav entry in `NAV_ITEMS`. No schema change. |
 
 ---
 
@@ -49,4 +50,6 @@ had been made.
 
 ### Next Phase
 
-**Undecided.** Phase 2.1 stopped at the verification boundary. Phase 3 not started.
+**Phase 3 (partial).** Trash lifecycle view implemented (see `docs/AI_HANDOFF.md` §7).
+Goals and Learning sectors **not started** — blocked on a database/design decision (no
+`goals`/`learning` tables, types, or field specs exist; v0 schema frozen per ADR-005/ADR-014).

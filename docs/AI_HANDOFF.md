@@ -160,6 +160,32 @@ Dev server log review: all requests `200`, `proxy.ts` middleware executing on ev
 
 ## 6. Next Recommended Phase
 
-**None — awaiting decision.** Phase 2.1 was a verification-only pass and has been stopped
-per the stop condition. Phase 3 (Goals, Learning, Trash lifecycle views, etc.) has **not**
-been started and must be explicitly authorized before work begins.
+**Phase 3 authorized — Trash slice implemented (see §7).** Goals and Learning sectors
+remain unstarted (blocked, see §7).
+
+---
+
+## 7. Phase 3 — Trash Lifecycle View (Implemented)
+
+**Scope implemented:** read-only Trash view over the four existing entities, reusing the
+established soft-delete mechanism (`deleted_at`) and lifecycle semantics
+(`TRASH_RETENTION_DAYS = 30`, `getLifecycleState`).
+
+| Piece | Location |
+| :--- | :--- |
+| Route (auth-gated, `AppShell` + `PageHeader`) | `src/app/trash/page.tsx` |
+| Server Actions (`getTrashedItems`, `restoreItem`, `permanentlyDeleteItem`) | `src/features/trash/actions.ts` |
+| Client list (entity filter tabs, Restore / Delete forever, `EmptyState`) | `src/features/trash/components/trash-list.tsx` |
+| Nav entry (`Trash`, `/trash`) — picked up by desktop `Sidebar` and mobile `Header` | `src/config/navigation.ts` |
+
+- No migration, no schema change, no `src/types/database.ts` change.
+- `restoreItem` sets `deleted_at = NULL`; `permanentlyDeleteItem` hard-deletes only rows
+  already soft-deleted (`.not('deleted_at', 'is', null)` guard), user-scoped (`user_id`).
+- Verification: `tsc` PASS, `lint` PASS, `build` PASS (12/12 pages, `/trash` listed),
+  `/trash` smoke test 200 → redirects to `/login` unauthenticated, no error markers.
+
+**Goals / Learning — NOT implemented (STOP condition).** No `goals`/`learning` tables exist
+in `0000_schema.sql`; no `Goal`/`Learning` interfaces exist (only `EntityType` union members);
+no field/status/relation spec exists in docs or code. ADR-005 bounds v0 to four entities and
+ADR-014 freezes the schema (no new tables). Building them would require inventing schema,
+RLS policies, and domain semantics — a database/design decision not yet made.

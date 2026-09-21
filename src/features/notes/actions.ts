@@ -39,7 +39,7 @@ export async function getNotes(): Promise<Note[]> {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching notes:', error);
+      console.error('Error fetching notes:', error.message || error);
       return [];
     }
 
@@ -111,7 +111,7 @@ export async function updateNote(
       return { success: false, error: 'User is not authenticated' };
     }
 
-    const updateData: Record<string, any> = {};
+    const updateData: Record<string, unknown> = {};
     if (payload.title !== undefined) updateData.title = payload.title.trim();
     if (payload.content !== undefined) updateData.content = payload.content.trim() || null;
     if (payload.tags !== undefined) updateData.tags = payload.tags;

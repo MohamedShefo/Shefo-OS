@@ -31,7 +31,7 @@ export function TaskList({ initialTasks, projects }: TaskListProps) {
       <div className="flex flex-col items-center justify-center p-12 text-center rounded-xl border border-dashed border-border bg-card/50">
         <p className="text-sm font-medium text-muted-foreground">All tasks complete!</p>
         <p className="text-xs text-muted-foreground/70 mt-1">
-          Click "+ New Task" to add your next action item.
+          Click &quot;+ New Task&quot; to add your next action item.
         </p>
       </div>
     );

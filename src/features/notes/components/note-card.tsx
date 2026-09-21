@@ -4,6 +4,7 @@ import { useState, useTransition, FormEvent } from 'react';
 import { Note, Project } from '@/types/database';
 import { deleteNote, updateNote } from '../actions';
 import { Button } from '@/components/ui/button';
+import { normalizeTags } from '@/lib/utils';
 
 interface NoteCardProps {
   note: Note;
@@ -12,10 +13,11 @@ interface NoteCardProps {
 }
 
 export function NoteCard({ note, projectsMap, projects }: NoteCardProps) {
+  const normalizedTags = normalizeTags(note.tags);
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content || '');
-  const [tagsInput, setTagsInput] = useState((note.tags || []).join(', '));
+  const [tagsInput, setTagsInput] = useState(normalizedTags.join(', '));
   const [projectId, setProjectId] = useState(note.project_id || '');
   const [isPending, startTransition] = useTransition();
 
@@ -124,9 +126,9 @@ export function NoteCard({ note, projectsMap, projects }: NoteCardProps) {
               </p>
             )}
 
-            {note.tags && note.tags.length > 0 && (
+            {normalizedTags.length > 0 && (
               <div className="flex flex-wrap gap-1 pt-1">
-                {note.tags.map((tag) => (
+                {normalizedTags.map((tag) => (
                   <span
                     key={tag}
                     className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground"

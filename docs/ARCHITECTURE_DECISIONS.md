@@ -131,3 +131,18 @@ This document records the foundational architectural decisions approved for **Sh
 - **Status**: Approved
 - **Context**: Exposing administrative credentials on the frontend creates high-severity security vulnerabilities.
 - **Decision**: Authenticate users strictly via standard Supabase Email/Password authentication. The frontend application MUST ONLY utilize `@supabase/ssr` with `NEXT_PUBLIC_SUPABASE_ANON_KEY`. The administrative `SUPABASE_SERVICE_ROLE_KEY` must **NEVER** be included in browser client code or bundled into public assets.
+
+---
+
+## ADR-016: Phase 0 Schema & Middleware Baseline Conventions
+
+- **Status**: Approved (Phase 0 Baseline Discovery)
+- **Context**: During the Phase 0 audit, small discrepancies were identified between early draft ADR texts and actual PostgreSQL DDL (`0000_schema.sql`), as well as Next.js 16 conventions.
+- **Decision**:
+  1. The canonical SQL ENUM definitions are anchored to `0000_schema.sql`:
+     - `capture_status`: `'unprocessed'`, `'processed'`
+     - `project_status`: `'active'`, `'paused'`, `'archived'`
+     - `task_status`: `'todo'`, `'in_progress'`, `'done'`
+     - `task_priority`: `'low'`, `'medium'`, `'high'`
+  2. Next.js 16 uses `src/proxy.ts` for Edge Middleware session handling. `proxy.ts` delegates to `updateSession` from `@/utils/supabase/middleware`.
+

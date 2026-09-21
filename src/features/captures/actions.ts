@@ -66,7 +66,7 @@ export async function getUnprocessedCaptures(): Promise<Capture[]> {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching unprocessed captures:', error);
+      console.error('Error fetching unprocessed captures:', error.message || error);
       return [];
     }
 

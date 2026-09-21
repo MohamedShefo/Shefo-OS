@@ -21,7 +21,7 @@ export function ProjectList({ initialProjects }: ProjectListProps) {
       <div className="flex flex-col items-center justify-center p-12 text-center rounded-xl border border-dashed border-border bg-card/50">
         <p className="text-sm font-medium text-muted-foreground">No projects yet.</p>
         <p className="text-xs text-muted-foreground/70 mt-1">
-          Click "+ New Project" to organize your outcomes.
+          Click &quot;+ New Project&quot; to organize your outcomes.
         </p>
       </div>
     );

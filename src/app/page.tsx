@@ -7,6 +7,7 @@ import { getNotes } from '@/features/notes/actions';
 import { getTasks } from '@/features/tasks/actions';
 import { CaptureInput } from '@/features/captures/components/capture-input';
 import { Button } from '@/components/ui/button';
+import { normalizeTags } from '@/lib/utils';
 
 export const metadata = {
   title: 'Dashboard',
@@ -210,18 +211,21 @@ export default async function Home() {
                 <p className="text-xs text-muted-foreground py-4 text-center">No notes created yet.</p>
               ) : (
                 <div className="space-y-2">
-                  {topNotes.map((n) => (
-                    <div key={n.id} className="p-2.5 rounded-md bg-muted/40 text-xs border border-border/50 space-y-1">
-                      <span className="font-semibold text-foreground block">{n.title}</span>
-                      {n.tags && n.tags.length > 0 && (
-                        <div className="flex gap-1 flex-wrap">
-                          {n.tags.map((tag) => (
-                            <span key={tag} className="text-[10px] text-muted-foreground">#{tag}</span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                  {topNotes.map((n) => {
+                    const tags = normalizeTags(n.tags);
+                    return (
+                      <div key={n.id} className="p-2.5 rounded-md bg-muted/40 text-xs border border-border/50 space-y-1">
+                        <span className="font-semibold text-foreground block">{n.title}</span>
+                        {tags.length > 0 && (
+                          <div className="flex gap-1 flex-wrap">
+                            {tags.map((tag) => (
+                              <span key={tag} className="text-[10px] text-muted-foreground">#{tag}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>

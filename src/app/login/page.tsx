@@ -46,7 +46,7 @@ export default async function Login(props: { searchParams: Promise<{ message?: s
         )}
 
         <div className="mt-4 text-center text-sm">
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <Link href="/signup" className="underline underline-offset-4">
             Sign Up
           </Link>

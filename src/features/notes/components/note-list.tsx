@@ -41,7 +41,7 @@ export function NoteList({ initialNotes, projects }: NoteListProps) {
       <div className="flex flex-col items-center justify-center p-12 text-center rounded-xl border border-dashed border-border bg-card/50">
         <p className="text-sm font-medium text-muted-foreground">No notes or knowledge items yet.</p>
         <p className="text-xs text-muted-foreground/70 mt-1">
-          Click "+ New Note" to capture structured knowledge and ideas.
+          Click &quot;+ New Note&quot; to capture structured knowledge and ideas.
         </p>
       </div>
     );

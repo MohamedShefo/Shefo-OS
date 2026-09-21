@@ -30,7 +30,7 @@ export async function getProjects(): Promise<Project[]> {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching projects:', error);
+      console.error('Error fetching projects:', error.message || error);
       return [];
     }
 

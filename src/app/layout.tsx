@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -38,12 +39,10 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        {/* Apply persisted theme before first paint (default: dark). */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('shefo:theme');var d=t? t==='dark' : true;document.documentElement.classList.toggle('dark',d);document.documentElement.style.colorScheme=d?'dark':'light';}catch(e){}})();`,
-          }}
-        />
+        {/* Persisted theme applied before first paint (default: dark). */}
+        <Script id="shefo-theme" strategy="beforeInteractive">
+          {`(function(){try{var t=localStorage.getItem('shefo:theme');var d=t? t==='dark' : true;document.documentElement.classList.toggle('dark',d);document.documentElement.style.colorScheme=d?'dark':'light';}catch(e){}})();`}
+        </Script>
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">{children}</body>
     </html>

@@ -8,6 +8,29 @@ through `supabase db push` (`ERROR: must be owner of table audit_log_entries`).
 The corresponding migration file was intentionally removed from
 `supabase/migrations/` so it can never half-apply or block future pushes.
 
+## Forensic record (all evidence gathered live, no assumptions)
+
+For the RLS hypothesis:
+- Controlled experiment: valid credentials → HTTP 500
+  (`unexpected_failure` / `Database error querying schema`) AFTER credential
+  validation; wrong password → clean HTTP 400 `invalid_credentials`. The failure
+  sits at session/identity creation, not user lookup.
+- RLS enabled with ZERO policies on every GoTrue-operated table
+  (`users`, `sessions`, `refresh_tokens`, `identities`, `mfa_factors`,
+  `mfa_challenges`, `mfa_amr_claims`, `audit_log_entries`, `flow_state`,
+  `instances`, `one_time_tokens`, `saml_*`, `sso_*`, `schema_migrations`).
+- `supabase_auth_admin` (GoTrue's role) has `rolbypassrls = false`.
+- `relforcerowsecurity = false` everywhere checked (no forced-RLS twist).
+- Zero grants on the `auth` schema to `anon`/`authenticated`.
+
+Alternative causes eliminated:
+- No custom triggers on any `auth` table (`information_schema.triggers` empty).
+- Table owners are stock (`supabase_auth_admin`).
+- `auth.instances` shape is current (`raw_base_config`, no legacy `raw_config`).
+- Representative `auth.users` rows are well-formed (bcrypt hash, confirmed email).
+- No schema change can be applied from this environment at all: the CLI role
+  lacks ownership/superuser rights, so no smaller CLI-side repair exists.
+
 ## Root cause (verified live, no guessing)
 
 - Password login deterministically returns HTTP 500

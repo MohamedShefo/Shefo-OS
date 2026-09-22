@@ -18,12 +18,15 @@ export interface RecordActivityInput {
   cityLabel?: string | null;
   deviceLabel?: string | null;
   shareLocation?: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
+  precision?: 'approximate' | 'exact' | null;
 }
 
 /**
- * Workspace presence (NOT security): last-seen + optional approximate
- * location. No continuous tracking — callers invoke this at most once per
- * shell load, and location is only stored with explicit opt-in consent.
+ * Workspace presence (NOT security): last-seen + optional location.
+ * Location is stored only with explicit opt-in consent; turning sharing off
+ * clears stored coordinates. Consent timestamp is recorded on first share.
  */
 export async function recordActivity(input: RecordActivityInput): Promise<void> {
   try {
@@ -31,14 +34,29 @@ export async function recordActivity(input: RecordActivityInput): Promise<void> 
     const ctx = await authedUser();
     if (!ctx) return;
     const share = input.shareLocation === true;
+    const now = new Date().toISOString();
+
+    const { data: existing } = await ctx.supabase
+      .from('workspace_activity')
+      .select('location_consent_at')
+      .eq('workspace_id', input.workspaceId)
+      .eq('user_id', ctx.user.id)
+      .maybeSingle();
+    const prior = existing as { location_consent_at: string | null } | null;
+
     await ctx.supabase.from('workspace_activity').upsert(
       {
         workspace_id: input.workspaceId,
         user_id: ctx.user.id,
-        last_seen_at: new Date().toISOString(),
+        last_seen_at: now,
         city_label: share ? (input.cityLabel ?? null) : null,
         device_label: input.deviceLabel ?? null,
         share_location: share,
+        latitude: share ? (input.latitude ?? null) : null,
+        longitude: share ? (input.longitude ?? null) : null,
+        location_precision: share ? (input.precision ?? 'approximate') : null,
+        location_consent_at: share ? (prior?.location_consent_at ?? now) : (prior?.location_consent_at ?? null),
+        location_updated_at: share ? now : null,
       },
       { onConflict: 'workspace_id,user_id' }
     );
@@ -80,6 +98,11 @@ export async function getWorkspaceActivity(workspaceId: string): Promise<MemberA
         city_label: a.share_location ? a.city_label : null,
         device_label: a.device_label,
         share_location: a.share_location,
+        latitude: a.share_location ? a.latitude : null,
+        longitude: a.share_location ? a.longitude : null,
+        location_precision: a.share_location ? a.location_precision : null,
+        location_consent_at: a.location_consent_at,
+        location_updated_at: a.share_location ? a.location_updated_at : null,
         updated_at: a.updated_at,
         displayName: a.profiles?.display_name ?? null,
       })) || []

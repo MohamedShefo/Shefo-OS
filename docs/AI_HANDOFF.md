@@ -303,3 +303,25 @@ donut math made pure for the immutability lint; username null-safety carried ove
 7/7 routes HTTP 200 with auth gates intact and no error markers.
 Authenticated interactive testing still blocked by the documented Auth
 login-500 (no Auth surgery performed).
+
+---
+
+## 13. Phase 6 Correction Pass — CLOSED
+
+- **Theme script:** raw `<script dangerouslySetInnerHTML>` in root layout replaced
+  with `next/script` (`beforeInteractive`); FOUC-safe persisted theme, RTL/LTR,
+  dark/light all preserved; `suppressHydrationWarning` kept on `<html>` only.
+  Verified in rendered HTML (script present, dark class, no errors).
+- **formatMoney boundary:** pure formatter extracted to `src/lib/format.ts`
+  (no directives); charts module keeps client-only SVG; all 4 importers updated.
+- **Exact workspace location:** migration `0008_exact_location.sql` applied
+  (lat/lng + precision + consent/update timestamps + pair/precision CHECKs);
+  3-mode consent (off/approximate/exact), high-accuracy exact capture with
+  graceful denial fallback, revocable with coordinate clearing, pluggable
+  server-side geocode interface (default: coords only, no API keys), admin-only
+  display with consent/update times. RLS unchanged (existing rules cover it).
+- **Auth:** full live forensics completed (see `docs/AUTH_REPAIR.md`); diagnosis
+  confirmed, no alternative cause found; repair remains a one-time superuser
+  step this environment cannot execute — no fake repair, no security weakening.
+- **Regression:** `tsc`/`lint`/`build` PASS (24/24); 20/20 routes HTTP 200 with
+  auth gates intact and zero error markers.

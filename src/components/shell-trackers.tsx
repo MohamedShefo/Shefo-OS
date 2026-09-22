@@ -3,7 +3,8 @@
 import { useEffect, useRef } from 'react';
 import { ensureDevice } from '@/features/devices/actions';
 import { recordActivity } from '@/features/activity/actions';
-import { isLocationSharingEnabled } from '@/features/activity/components/location-consent';
+import { getLocationMode } from '@/features/activity/components/location-consent';
+import { formatApprox, formatCoords } from '@/features/activity/geocode';
 
 function coarseDeviceLabel(): string {
   if (typeof navigator === 'undefined') return 'Unknown device';
@@ -24,20 +25,53 @@ export function ShellTrackers({ workspaceId }: { workspaceId: string | null }) {
     ran.current = true;
     void ensureDevice();
     if (!workspaceId) return;
-    const share = isLocationSharingEnabled();
+    const mode = getLocationMode();
     const deviceLabel = coarseDeviceLabel();
-    const send = (city: string | null) =>
-      void recordActivity({ workspaceId, cityLabel: city, deviceLabel, shareLocation: share });
-    if (share && 'geolocation' in navigator) {
+    const send = (
+      city: string | null,
+      latitude: number | null = null,
+      longitude: number | null = null,
+      precision: 'approximate' | 'exact' | null = null
+    ) =>
+      void recordActivity({
+        workspaceId,
+        cityLabel: city,
+        deviceLabel,
+        shareLocation: mode !== 'off',
+        latitude,
+        longitude,
+        precision,
+      });
+    if (mode === 'off' || !('geolocation' in navigator)) {
+      send(null);
+      return;
+    }
+    if (mode === 'approximate') {
       navigator.geolocation.getCurrentPosition(
         (pos) =>
-          send(`≈ ${pos.coords.latitude.toFixed(2)}, ${pos.coords.longitude.toFixed(2)}`),
+          send(
+            formatApprox(pos.coords.latitude, pos.coords.longitude),
+            Math.round(pos.coords.latitude * 100) / 100,
+            Math.round(pos.coords.longitude * 100) / 100,
+            'approximate'
+          ),
         () => send(null),
         { timeout: 8000, maximumAge: 3600000 }
       );
-    } else {
-      send(null);
+      return;
     }
+    // Exact mode: precise coordinates; denial falls back to no location.
+    navigator.geolocation.getCurrentPosition(
+      (pos) =>
+        send(
+          formatCoords(pos.coords.latitude, pos.coords.longitude),
+          pos.coords.latitude,
+          pos.coords.longitude,
+          'exact'
+        ),
+      () => send(null),
+      { timeout: 10000, maximumAge: 600000, enableHighAccuracy: true }
+    );
   }, [workspaceId]);
 
   return null;

@@ -270,5 +270,10 @@ export interface WorkspaceActivity {
   city_label: string | null;
   device_label: string | null;
   share_location: boolean;
+  latitude: number | null;
+  longitude: number | null;
+  location_precision: string | null;
+  location_consent_at: string | null;
+  location_updated_at: string | null;
   updated_at: string;
 }

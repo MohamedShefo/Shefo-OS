@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/common/empty-state';
 import { SearchField } from '@/components/common/search-field';
 import { matchesQuery } from '@/lib/search';
-import { formatMoney } from '@/components/common/charts';
+import { formatMoney } from '@/lib/format';
 import { todayISO } from '@/lib/date';
 
 const inputClass =

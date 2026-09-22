@@ -6,7 +6,7 @@ import type { HabitWithProgress } from '@/features/habits/actions';
 import type { MonthSummary } from '@/features/finance/actions';
 import { formatTimer, useTimer } from '@/features/timer/use-timer';
 import { ProgressBar, goalProgress } from '@/features/goals/progress';
-import { formatMoney } from '@/components/common/charts';
+import { formatMoney } from '@/lib/format';
 import { normalizeTags } from '@/lib/utils';
 
 function Card({

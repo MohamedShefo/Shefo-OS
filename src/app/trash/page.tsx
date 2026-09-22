@@ -6,7 +6,6 @@ import { TrashList } from '@/features/trash/components/trash-list';
 import { Button } from '@/components/ui/button';
 import { AppShell } from '@/components/shell/app-shell';
 import { PageHeader } from '@/components/common/page-header';
-import { TRASH_RETENTION_DAYS } from '@/types/lifecycle';
 
 export const metadata = {
   title: 'Trash',
@@ -30,7 +29,7 @@ export default async function TrashPage() {
       {/* Header */}
       <PageHeader
         title="Trash"
-        description={`Restore soft-deleted items or delete them permanently. Items are retained for ${TRASH_RETENTION_DAYS} days.`}
+        description="Deleted items remain here until you permanently delete them."
         actions={
           <>
             <Link href="/">

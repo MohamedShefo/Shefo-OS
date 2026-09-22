@@ -4,7 +4,6 @@ import { useTransition } from 'react';
 import { useState } from 'react';
 import { EmptyState } from '@/components/common/empty-state';
 import { Button } from '@/components/ui/button';
-import { TRASH_RETENTION_DAYS } from '@/types/lifecycle';
 import {
   permanentlyDeleteItem,
   restoreItem,
@@ -36,13 +35,6 @@ function getItemTitle(entry: TrashedItem): string {
     case 'task':
       return entry.item.title;
   }
-}
-
-function getDaysRemaining(deletedAt: string | null): number {
-  if (!deletedAt) return TRASH_RETENTION_DAYS;
-  const elapsedMs = Date.now() - new Date(deletedAt).getTime();
-  const elapsedDays = Math.floor(elapsedMs / (1000 * 60 * 60 * 24));
-  return Math.max(0, TRASH_RETENTION_DAYS - elapsedDays);
 }
 
 export function TrashList({ initialItems }: TrashListProps) {
@@ -119,9 +111,7 @@ export function TrashList({ initialItems }: TrashListProps) {
                   Deleted{' '}
                   {entry.item.deleted_at
                     ? new Date(entry.item.deleted_at).toLocaleDateString()
-                    : '—'}{' '}
-                  · {getDaysRemaining(entry.item.deleted_at)} of {TRASH_RETENTION_DAYS} days
-                  remaining
+                    : '—'}
                 </p>
               </div>
 

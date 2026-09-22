@@ -6,10 +6,11 @@ import { ProjectStatus } from '@/types/database';
 import { Button } from '@/components/ui/button';
 
 interface CreateProjectDialogProps {
+  workspaceId?: string | null;
   onSuccess?: () => void;
 }
 
-export function CreateProjectDialog({ onSuccess }: CreateProjectDialogProps) {
+export function CreateProjectDialog({ workspaceId = null, onSuccess }: CreateProjectDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -27,6 +28,7 @@ export function CreateProjectDialog({ onSuccess }: CreateProjectDialogProps) {
         name,
         description,
         status,
+        workspace_id: workspaceId,
       });
 
       if (res.success) {

@@ -246,3 +246,31 @@ Single coherent batch. Migration `0005_phase4_work_knowledge.sql` applied remote
 **Review fixes (one pass):** to-one embed casts normalized via `toOne` (+ trashed-skill filtering in relation lists), `classifyPara` made exhaustive for new entity types, empty-interface lint fix, `todayISO` extracted from `'use server'` modules to `src/lib/date.ts`, PostgREST embed hint names verified against live constraints.
 
 **Verification:** `tsc` PASS, `lint` PASS, `build` PASS (18/18 pages), 6/6 new routes HTTP 200 with auth gates intact and no error markers. Authenticated interactive testing still blocked by the known remote Auth login-500 issue (no Auth surgery performed).
+
+---
+
+## 11. Phase 5 — Multi-User, Workspaces & Security (Implemented)
+
+**Auth root cause (diagnosed, repair documented — NOT applied):**
+remote `auth.*` tables carry RLS with zero policies while `supabase_auth_admin`
+lacks BYPASSRLS, so GoTrue cannot create sessions (login 500s post-validation).
+CLI temp role is not table owner (`must be owner` on push), so the fix needs a
+one-time superuser run. Exact SQL + safety case + verification live in
+`docs/AUTH_REPAIR.md`; the failed migration file was removed so pushes stay clean.
+
+**Delivered:** profiles/avatars (`avatars` bucket), workspaces + memberships
+(owner/admin/member, helpers, last-owner guards), explicit authorization
+(server + RLS on every mutation), native TOTP MFA (opt-in), password step-up
+device trust (hash-based, IP never identity), opt-in approximate activity
+location (admin-visible only), append-only security events, `/security` hub,
+workspace switcher + project/note workspace filing, shell integration
+(search/palette/nav/breadcrumbs compatible).
+
+**Review fixes (one pass):** cookie constants extracted from `'use server'`
+modules (`src/lib/cookies.ts`), empty-object-type lint, avatar directive
+placement, MFA effect refactor, username null-safety, trashed-skill filtering.
+
+**Verification:** `tsc` PASS, `lint` PASS, `build` PASS (21/21 pages),
+migration history synced through `0006`, new tables RLS-verified remotely,
+route smoke (see report). Authenticated interactive testing still blocked by
+the Auth issue above — recorded with repair procedure ready.

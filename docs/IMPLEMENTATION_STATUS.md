@@ -38,6 +38,14 @@
 | **Notes Layer C** | Complete (Phase 4, minimal) | Build OK | One-hop pure-SVG graph + read/edit/split views on `/notes/[id]`. No graph DB, no deps. |
 | **Manual Linking** | Complete (Phase 4) | Build OK | `note_links` (directed, self-link blocked, ownership-checked both ends) + junctions; managers on note/work detail; project↔work attach. |
 | **Export + Interop** | Complete (Phase 4) | Build OK | `/export`: full JSON backup, notes Markdown bundle (frontmatter + [[wikilinks]]), per-entity CSVs. Stable ids throughout. No sync product. |
+| **Profiles + Avatars** | Complete (Phase 5) | Build OK | `profiles` table (owner-only RLS), `/profile` editor, `avatars` storage bucket (public read, own-folder writes, 2MB image whitelist server-side), initials fallback. |
+| **Workspaces** | Complete (Phase 5) | Build OK | `workspaces` + `memberships` (owner/admin/member) + SECURITY DEFINER helpers; `/workspaces`, `/workspaces/[id]` (settings, roster, activity); switcher in shell; personal auto-provision on login; projects/notes filterable + fileable by workspace. |
+| **Authorization** | Complete (Phase 5) | Build OK | Owner-only mutations, last-owner guards, membership-validated switching, RLS + server checks on every mutation. No client-side security reliance. |
+| **MFA / Step-up** | Complete (Phase 5) | Build OK | Native Supabase TOTP enroll/verify/unenroll + assurance display; password re-entry gates device trust. Opt-in, no lockout risk. |
+| **Trusted Devices** | Complete (Phase 5) | Build OK | Hash-based records (no raw secrets/IP), explicit trust, revoke, hourly last-seen refresh, per-device list. |
+| **Activity / Location** | Complete (Phase 5) | Build OK | Opt-in approximate location (~1km), admin/owner-only visibility, self-only otherwise, no tracking, never auth-relevant. |
+| **Security Events** | Complete (Phase 5) | Build OK | Append-only log (login, signup, devices, MFA, password, workspace changes); owner-read, immutable. |
+| **Session Controls** | Complete (Phase 5) | Build OK | `/security` hub: session info, logout, password change, devices, MFA, events, location consent. |
 
 ---
 

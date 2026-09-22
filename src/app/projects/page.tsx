@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/server';
 import { getProjects } from '@/features/projects/actions';
+import { getCurrentWorkspaceId } from '@/features/workspaces/actions';
 import { ProjectList } from '@/features/projects/components/project-list';
 import { CreateProjectDialog } from '@/features/projects/components/create-project-dialog';
 import { Button } from '@/components/ui/button';
@@ -23,7 +24,8 @@ export default async function ProjectsPage() {
     redirect('/login');
   }
 
-  const projects = await getProjects();
+  const workspaceId = await getCurrentWorkspaceId();
+  const projects = await getProjects(workspaceId);
 
   return (
     <AppShell userEmail={user.email}>
@@ -38,7 +40,7 @@ export default async function ProjectsPage() {
                 Home
               </Button>
             </Link>
-            <CreateProjectDialog />
+            <CreateProjectDialog workspaceId={workspaceId} />
           </>
         }
       />

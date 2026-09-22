@@ -39,6 +39,18 @@ export const NAV_ITEMS: NavItem[] = [
     icon: '✅',
   },
   {
+    id: 'workspaces',
+    label: 'Workspaces',
+    href: '/workspaces',
+    icon: '🏢',
+  },
+  {
+    id: 'security',
+    label: 'Security',
+    href: '/security',
+    icon: '🔒',
+  },
+  {
     id: 'work',
     label: 'Work',
     href: '/work',

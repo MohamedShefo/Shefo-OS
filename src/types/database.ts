@@ -23,6 +23,7 @@ export interface Project {
   description: string | null;
   status: ProjectStatus;
   work_experience_id: string | null;
+  workspace_id: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -38,6 +39,7 @@ export interface Note {
   project_id: string | null;
   work_experience_id: string | null;
   note_type: string | null;
+  workspace_id: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -152,4 +154,63 @@ export interface NoteSkill {
   note_id: string;
   skill_id: string;
   created_at: string;
+}
+
+export interface Profile {
+  id: string;
+  display_name: string | null;
+  username: string | null;
+  avatar_url: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type WorkspaceRole = 'owner' | 'admin' | 'member';
+
+export interface Workspace {
+  id: string;
+  owner_id: string;
+  name: string;
+  type: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export interface Membership {
+  id: string;
+  workspace_id: string;
+  user_id: string;
+  role: string;
+  joined_at: string;
+}
+
+export interface TrustedDevice {
+  id: string;
+  user_id: string;
+  device_label: string | null;
+  device_hash: string;
+  trusted: boolean;
+  created_at: string;
+  last_seen_at: string;
+}
+
+export interface SecurityEvent {
+  id: string;
+  user_id: string;
+  event_type: string;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface WorkspaceActivity {
+  id: string;
+  workspace_id: string;
+  user_id: string;
+  last_seen_at: string;
+  city_label: string | null;
+  device_label: string | null;
+  share_location: boolean;
+  updated_at: string;
 }

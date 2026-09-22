@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/server';
 import { getNotes } from '@/features/notes/actions';
 import { getProjects } from '@/features/projects/actions';
 import { getWorkExperiences } from '@/features/work/actions';
+import { getCurrentWorkspaceId } from '@/features/workspaces/actions';
 import { NoteList } from '@/features/notes/components/note-list';
 import { CreateNoteDialog } from '@/features/notes/components/create-note-dialog';
 import { Button } from '@/components/ui/button';
@@ -25,8 +26,9 @@ export default async function NotesPage() {
     redirect('/login');
   }
 
+  const workspaceId = await getCurrentWorkspaceId();
   const [notes, projects, works] = await Promise.all([
-    getNotes(),
+    getNotes(workspaceId),
     getProjects(),
     getWorkExperiences(),
   ]);
@@ -44,7 +46,7 @@ export default async function NotesPage() {
                 Home
               </Button>
             </Link>
-            <CreateNoteDialog projects={projects} works={works} />
+            <CreateNoteDialog projects={projects} works={works} workspaceId={workspaceId} />
           </>
         }
       />

@@ -12,6 +12,7 @@ export interface CreateNotePayload {
   source_capture_id?: string | null;
   work_experience_id?: string | null;
   note_type?: string | null;
+  workspace_id?: string | null;
 }
 
 export interface UpdateNotePayload {
@@ -23,7 +24,7 @@ export interface UpdateNotePayload {
   note_type?: string | null;
 }
 
-export async function getNotes(): Promise<Note[]> {
+export async function getNotes(workspaceId?: string | null): Promise<Note[]> {
   try {
     const supabase = await createClient();
     const {
@@ -35,12 +36,16 @@ export async function getNotes(): Promise<Note[]> {
       return [];
     }
 
-    const { data, error } = await supabase
+    let query = supabase
       .from('notes')
       .select('*')
       .eq('user_id', user.id)
-      .is('deleted_at', null)
-      .order('created_at', { ascending: false });
+      .is('deleted_at', null);
+    if (workspaceId) {
+      query = query.eq('workspace_id', workspaceId);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching notes:', error.message || error);
@@ -84,6 +89,7 @@ export async function createNote(
         source_capture_id: payload.source_capture_id || null,
         work_experience_id: payload.work_experience_id || null,
         note_type: payload.note_type?.trim() || null,
+        workspace_id: payload.workspace_id || null,
       })
       .select('*')
       .single();

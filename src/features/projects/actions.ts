@@ -8,9 +8,10 @@ export interface CreateProjectPayload {
   name: string;
   description?: string;
   status?: ProjectStatus;
+  workspace_id?: string | null;
 }
 
-export async function getProjects(): Promise<Project[]> {
+export async function getProjects(workspaceId?: string | null): Promise<Project[]> {
   try {
     const supabase = await createClient();
     const {
@@ -22,12 +23,16 @@ export async function getProjects(): Promise<Project[]> {
       return [];
     }
 
-    const { data, error } = await supabase
+    let query = supabase
       .from('projects')
       .select('*')
       .eq('user_id', user.id)
-      .is('deleted_at', null)
-      .order('created_at', { ascending: false });
+      .is('deleted_at', null);
+    if (workspaceId) {
+      query = query.eq('workspace_id', workspaceId);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching projects:', error.message || error);
@@ -67,6 +72,7 @@ export async function createProject(
         name,
         description: payload.description?.trim() || null,
         status: payload.status || 'active',
+        workspace_id: payload.workspace_id || null,
       })
       .select('*')
       .single();

@@ -9,10 +9,11 @@ import { NOTE_TYPES } from './note-card';
 interface CreateNoteDialogProps {
   projects: Project[];
   works?: WorkExperience[];
+  workspaceId?: string | null;
   onSuccess?: () => void;
 }
 
-export function CreateNoteDialog({ projects, works = [], onSuccess }: CreateNoteDialogProps) {
+export function CreateNoteDialog({ projects, works = [], workspaceId = null, onSuccess }: CreateNoteDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -41,6 +42,7 @@ export function CreateNoteDialog({ projects, works = [], onSuccess }: CreateNote
         project_id: projectId || null,
         work_experience_id: workId || null,
         note_type: noteType || null,
+        workspace_id: workspaceId,
       });
 
       if (res.success) {

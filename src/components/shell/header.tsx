@@ -7,12 +7,16 @@ import { NAV_ITEMS } from '@/config/navigation';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { openCommandPalette } from '@/components/command-palette';
+import { WorkspaceSwitcher } from '@/features/workspaces/components/workspace-switcher';
+import type { WorkspaceWithRole } from '@/features/workspaces/actions';
 
 interface HeaderProps {
   userEmail?: string | null;
+  workspaces?: WorkspaceWithRole[];
+  currentWorkspaceId?: string | null;
 }
 
-export function Header({ userEmail }: HeaderProps) {
+export function Header({ userEmail, workspaces = [], currentWorkspaceId = null }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
@@ -76,8 +80,24 @@ export function Header({ userEmail }: HeaderProps) {
           </nav>
 
           {userEmail && (
-            <div className="px-3 pt-2 text-[11px] text-muted-foreground border-t border-border/50">
-              User: <span className="font-medium text-foreground">{userEmail}</span>
+            <div className="px-3 pt-2 text-[11px] text-muted-foreground border-t border-border/50 space-y-2">
+              <div>
+                User: <span className="font-medium text-foreground">{userEmail}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                {workspaces.length > 0 && (
+                  <div className="flex-1">
+                    <WorkspaceSwitcher workspaces={workspaces} currentId={currentWorkspaceId} />
+                  </div>
+                )}
+                <Link
+                  href="/profile"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="rounded-lg border border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground shrink-0"
+                >
+                  👤 Profile
+                </Link>
+              </div>
             </div>
           )}
         </div>

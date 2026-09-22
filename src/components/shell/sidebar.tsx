@@ -6,13 +6,17 @@ import { NAV_ITEMS } from '@/config/navigation';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { openCommandPalette } from '@/components/command-palette';
+import { WorkspaceSwitcher } from '@/features/workspaces/components/workspace-switcher';
+import type { WorkspaceWithRole } from '@/features/workspaces/actions';
 import { logout } from '@/app/auth-actions';
 
 interface SidebarProps {
   userEmail?: string | null;
+  workspaces?: WorkspaceWithRole[];
+  currentWorkspaceId?: string | null;
 }
 
-export function Sidebar({ userEmail }: SidebarProps) {
+export function Sidebar({ userEmail, workspaces = [], currentWorkspaceId = null }: SidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -43,6 +47,11 @@ export function Sidebar({ userEmail }: SidebarProps) {
             <span className="truncate flex-1 text-start">Search or command…</span>
             <kbd className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px]">⌘K</kbd>
           </button>
+          {userEmail && workspaces.length > 0 && (
+            <div className="px-0 py-1">
+              <WorkspaceSwitcher workspaces={workspaces} currentId={currentWorkspaceId} />
+            </div>
+          )}
           {NAV_ITEMS.map((item) => {
             const isActive =
               item.href === '/'
@@ -82,6 +91,15 @@ export function Sidebar({ userEmail }: SidebarProps) {
           <div className="px-2 flex justify-end">
             <ThemeToggle />
           </div>
+        )}
+        {userEmail && (
+          <Link
+            href="/profile"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-all text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <span className="text-sm">👤</span>
+            <span className="truncate">Profile</span>
+          </Link>
         )}
         <form action={logout}>
           <Button

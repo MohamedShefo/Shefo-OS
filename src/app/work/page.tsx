@@ -1,21 +1,19 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/server';
-import { getNotes } from '@/features/notes/actions';
-import { getProjects } from '@/features/projects/actions';
 import { getWorkExperiences } from '@/features/work/actions';
-import { NoteList } from '@/features/notes/components/note-list';
-import { CreateNoteDialog } from '@/features/notes/components/create-note-dialog';
+import { WorkList } from '@/features/work/components/work-list';
+import { WorkDialog } from '@/features/work/components/work-dialog';
 import { Button } from '@/components/ui/button';
 import { AppShell } from '@/components/shell/app-shell';
 import { PageHeader } from '@/components/common/page-header';
 
 export const metadata = {
-  title: 'Notes & Concepts',
-  description: 'Structured knowledge items and notes management.',
+  title: 'Work Experience',
+  description: 'Workplaces, roles, and professional history.',
 };
 
-export default async function NotesPage() {
+export default async function WorkPage() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -25,18 +23,13 @@ export default async function NotesPage() {
     redirect('/login');
   }
 
-  const [notes, projects, works] = await Promise.all([
-    getNotes(),
-    getProjects(),
-    getWorkExperiences(),
-  ]);
+  const work = await getWorkExperiences();
 
   return (
     <AppShell userEmail={user.email}>
-      {/* Header */}
       <PageHeader
-        title="Notes & Concepts"
-        description="Externalize knowledge, meeting notes, and core concepts."
+        title="Work Experience"
+        description="Workplaces and roles over time. History stays intact when you leave."
         actions={
           <>
             <Link href="/">
@@ -44,14 +37,13 @@ export default async function NotesPage() {
                 Home
               </Button>
             </Link>
-            <CreateNoteDialog projects={projects} works={works} />
+            <WorkDialog />
           </>
         }
       />
 
-      {/* Note List / Grid */}
       <section>
-        <NoteList initialNotes={notes} projects={projects} works={works} />
+        <WorkList initialWork={work} />
       </section>
     </AppShell>
   );

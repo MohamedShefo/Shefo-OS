@@ -1,24 +1,30 @@
 'use client';
 
 import { useState, useTransition, FormEvent } from 'react';
-import { Note, Project } from '@/types/database';
+import Link from 'next/link';
+import { Note, Project, WorkExperience } from '@/types/database';
 import { deleteNote, updateNote } from '../actions';
 import { Button } from '@/components/ui/button';
 import { normalizeTags } from '@/lib/utils';
+
+export const NOTE_TYPES = ['note', 'concept', 'reference', 'meeting', 'idea'] as const;
 
 interface NoteCardProps {
   note: Note;
   projectsMap: Record<string, string>; // project_id -> project_name
   projects: Project[];
+  works?: WorkExperience[];
 }
 
-export function NoteCard({ note, projectsMap, projects }: NoteCardProps) {
+export function NoteCard({ note, projectsMap, projects, works = [] }: NoteCardProps) {
   const normalizedTags = normalizeTags(note.tags);
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content || '');
   const [tagsInput, setTagsInput] = useState(normalizedTags.join(', '));
   const [projectId, setProjectId] = useState(note.project_id || '');
+  const [workId, setWorkId] = useState(note.work_experience_id || '');
+  const [noteType, setNoteType] = useState(note.note_type || 'note');
   const [isPending, startTransition] = useTransition();
 
   const handleDelete = () => {
@@ -42,6 +48,8 @@ export function NoteCard({ note, projectsMap, projects }: NoteCardProps) {
         content,
         tags,
         project_id: projectId || null,
+        work_experience_id: workId || null,
+        note_type: noteType || null,
       });
 
       if (res.success) {
@@ -51,6 +59,11 @@ export function NoteCard({ note, projectsMap, projects }: NoteCardProps) {
   };
 
   const projectName = note.project_id ? projectsMap[note.project_id] : null;
+  const worksMap: Record<string, string> = {};
+  works.forEach((w) => {
+    worksMap[w.id] = w.organization;
+  });
+  const workName = note.work_experience_id ? worksMap[note.work_experience_id] : null;
 
   return (
     <div className="group relative flex flex-col justify-between rounded-xl border border-border bg-card p-5 shadow-xs hover:border-ring/40 transition-all space-y-3">
@@ -89,6 +102,30 @@ export function NoteCard({ note, projectsMap, projects }: NoteCardProps) {
                 </option>
               ))}
             </select>
+            <select
+              value={workId}
+              onChange={(e) => setWorkId(e.target.value)}
+              className="w-full rounded border border-input bg-background px-2 py-1 text-xs"
+            >
+              <option value="">No Workplace</option>
+              {works.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.organization}
+                  {w.role ? ` · ${w.role}` : ''}
+                </option>
+              ))}
+            </select>
+            <select
+              value={noteType}
+              onChange={(e) => setNoteType(e.target.value)}
+              className="w-full rounded border border-input bg-background px-2 py-1 text-xs capitalize"
+            >
+              {NOTE_TYPES.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="flex items-center justify-end gap-2 pt-1">
             <Button
@@ -110,14 +147,29 @@ export function NoteCard({ note, projectsMap, projects }: NoteCardProps) {
         <>
           <div className="space-y-2">
             <div className="flex items-start justify-between gap-3">
-              <h3 className="font-semibold text-base leading-tight tracking-tight text-foreground">
+              <Link
+                href={`/notes/${note.id}`}
+                className="font-semibold text-base leading-tight tracking-tight text-foreground hover:underline underline-offset-4"
+              >
                 {note.title}
-              </h3>
-              {projectName && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary border border-primary/20 shrink-0">
-                  📁 {projectName}
-                </span>
-              )}
+              </Link>
+              <span className="flex shrink-0 items-center gap-1">
+                {note.note_type && note.note_type !== 'note' && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-muted text-muted-foreground border border-border capitalize">
+                    {note.note_type}
+                  </span>
+                )}
+                {workName && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary border border-primary/20">
+                    💼 {workName}
+                  </span>
+                )}
+                {projectName && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary border border-primary/20 shrink-0">
+                    📁 {projectName}
+                  </span>
+                )}
+              </span>
             </div>
 
             {note.content && (

@@ -165,6 +165,32 @@ export async function deleteTask(
   }
 }
 
+export async function getTasksByNote(noteId: string): Promise<Task[]> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) return [];
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('note_id', noteId)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false });
+    if (error) {
+      console.error('Error fetching tasks by note:', error.message || error);
+      return [];
+    }
+    return (data as Task[]) || [];
+  } catch (err) {
+    console.error('Unexpected error in getTasksByNote:', err);
+    return [];
+  }
+}
+
 export async function getTasksByProject(projectId: string): Promise<Task[]> {
   try {
     const supabase = await createClient();

@@ -69,9 +69,13 @@ export function classifyPara(
     case 'capture':
       return status === 'processed' ? 'resources' : 'inbox';
     case 'project':
+    case 'work':
+    case 'habit':
       return 'projects';
     case 'note':
     case 'learning':
+    case 'skill':
+    case 'journal':
       return 'resources';
     case 'task':
     case 'goal':

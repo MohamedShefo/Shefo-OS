@@ -4,7 +4,11 @@ export type EntityType =
   | 'project'
   | 'task'
   | 'goal'
-  | 'learning';
+  | 'learning'
+  | 'work'
+  | 'skill'
+  | 'journal'
+  | 'habit';
 
 export type EntityRef = {
   entityType: EntityType;

@@ -29,6 +29,15 @@
 | **PARA Foundation** | Complete (Phase 3) | Build OK | `src/types/para.ts` (buckets, registry, `classifyPara` with trash/archive separation) + `/archives` route (paused/completed projects only, Trash excluded). No migration. |
 | **Unified Shell** | Complete (Phase 3) | Build OK | `Breadcrumbs` (registry-driven), palette/capture/timer mounts, search entry points, theme toggle placement. No Normal/Focus dashboard system (deferred). |
 | **Visual Identity + Motion** | Complete (Phase 3) | Build OK | Dark-by-default with persisted light-mode toggle (FOUC-safe pre-paint script), CSS-only transitions, global `prefers-reduced-motion` guard. No animation libraries added. |
+| **Work / Experience** | Complete (Phase 4) | Build OK | Generic `work_experiences` table + `/work` list, `/work/[id]` hub (linked projects/notes/skills, attach/detach, edit). Leaving deletes nothing (SET NULL links). |
+| **Skills** | Complete (Phase 4) | Build OK | `skills` table + junctions; `/skills` inventory with usage counts; linking from workplaces and notes. No grading/certification. |
+| **Daily Journal** | Complete (Phase 4) | Build OK | `journal_entries` (unique user+date) + `/journal?date=` navigation, editor with save/delete, recent list. |
+| **Habit Tracker** | Complete (Phase 4) | Build OK | `habits` + `habit_completions` (unique habit+day, idempotent toggle); streaks, 7-day history, active/inactive, soft delete. Manual only. |
+| **Notes Layer A** | Complete (Phase 4) | Build OK | `note_type`, `work_experience_id` columns; type/workplace selectors in create + card edit; badges in list. |
+| **Notes Layer B** | Complete (Phase 4) | Build OK | `note_blocks` (typed, ordered, stable ids) + blocks editor; `note.content` kept as synced plain-text fallback. |
+| **Notes Layer C** | Complete (Phase 4, minimal) | Build OK | One-hop pure-SVG graph + read/edit/split views on `/notes/[id]`. No graph DB, no deps. |
+| **Manual Linking** | Complete (Phase 4) | Build OK | `note_links` (directed, self-link blocked, ownership-checked both ends) + junctions; managers on note/work detail; project↔work attach. |
+| **Export + Interop** | Complete (Phase 4) | Build OK | `/export`: full JSON backup, notes Markdown bundle (frontmatter + [[wikilinks]]), per-entity CSVs. Stable ids throughout. No sync product. |
 
 ---
 

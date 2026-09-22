@@ -22,6 +22,7 @@ export interface Project {
   name: string;
   description: string | null;
   status: ProjectStatus;
+  work_experience_id: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -35,6 +36,8 @@ export interface Note {
   tags: string[] | null;
   source_capture_id: string | null;
   project_id: string | null;
+  work_experience_id: string | null;
+  note_type: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -54,4 +57,99 @@ export interface Task {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+}
+
+export interface WorkExperience {
+  id: string;
+  user_id: string;
+  organization: string;
+  role: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  is_current: boolean;
+  description: string | null;
+  responsibilities: string | null;
+  key_people: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export interface Skill {
+  id: string;
+  user_id: string;
+  name: string;
+  category: string | null;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export interface JournalEntry {
+  id: string;
+  user_id: string;
+  entry_date: string;
+  title: string | null;
+  content: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export interface Habit {
+  id: string;
+  user_id: string;
+  name: string;
+  description: string | null;
+  frequency: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export interface HabitCompletion {
+  id: string;
+  user_id: string;
+  habit_id: string;
+  completion_date: string;
+  created_at: string;
+}
+
+export type NoteBlockType = 'text' | 'heading' | 'list';
+
+export interface NoteBlock {
+  id: string;
+  user_id: string;
+  note_id: string;
+  block_type: string;
+  content: string | null;
+  position: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface NoteLink {
+  id: string;
+  user_id: string;
+  from_note_id: string;
+  to_note_id: string;
+  created_at: string;
+}
+
+export interface WorkExperienceSkill {
+  id: string;
+  user_id: string;
+  work_experience_id: string;
+  skill_id: string;
+  created_at: string;
+}
+
+export interface NoteSkill {
+  id: string;
+  user_id: string;
+  note_id: string;
+  skill_id: string;
+  created_at: string;
 }

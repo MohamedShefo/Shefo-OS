@@ -3,7 +3,12 @@
 import { createClient } from '@/utils/supabase/server';
 import type { EntityType } from '@/types/domain';
 
-export type SearchResultEntity = Extract<EntityType, 'capture' | 'note' | 'project' | 'task'>;
+export type SearchResultEntity =
+  | Extract<EntityType, 'capture' | 'note' | 'project' | 'task'>
+  | 'work'
+  | 'skill'
+  | 'journal'
+  | 'habit';
 
 export interface SearchResult {
   entityType: SearchResultEntity;
@@ -46,7 +51,7 @@ export async function globalSearch(query: string): Promise<SearchResult[]> {
     // query containing those characters degrades to a simpler match, not an error.
     const orPattern = `%${q.replace(/[%_\\]/g, '\\$&').replace(/[,()]/g, '')}%`;
 
-    const [captures, notes, projects, tasks] = await Promise.all([
+    const [captures, notes, projects, tasks, work, skills, journal, habits] = await Promise.all([
       supabase
         .from('captures')
         .select('id, raw_text, updated_at')
@@ -79,6 +84,38 @@ export async function globalSearch(query: string): Promise<SearchResult[]> {
         .or(`title.ilike.${orPattern},description.ilike.${orPattern}`)
         .order('updated_at', { ascending: false })
         .limit(PER_TYPE_LIMIT),
+      supabase
+        .from('work_experiences')
+        .select('id, organization, role, updated_at')
+        .eq('user_id', user.id)
+        .is('deleted_at', null)
+        .or(`organization.ilike.${orPattern},role.ilike.${orPattern}`)
+        .order('updated_at', { ascending: false })
+        .limit(4),
+      supabase
+        .from('skills')
+        .select('id, name, category, updated_at')
+        .eq('user_id', user.id)
+        .is('deleted_at', null)
+        .or(`name.ilike.${orPattern},category.ilike.${orPattern}`)
+        .order('updated_at', { ascending: false })
+        .limit(4),
+      supabase
+        .from('journal_entries')
+        .select('id, entry_date, title, content, updated_at')
+        .eq('user_id', user.id)
+        .is('deleted_at', null)
+        .or(`title.ilike.${orPattern},content.ilike.${orPattern}`)
+        .order('entry_date', { ascending: false })
+        .limit(4),
+      supabase
+        .from('habits')
+        .select('id, name, description, updated_at')
+        .eq('user_id', user.id)
+        .is('deleted_at', null)
+        .ilike('name', pattern)
+        .order('updated_at', { ascending: false })
+        .limit(4),
     ]);
 
     const results: SearchResult[] = [];
@@ -121,6 +158,46 @@ export async function globalSearch(query: string): Promise<SearchResult[]> {
         snippet: snippetOf(t.description),
         href: '/tasks',
         updatedAt: t.updated_at,
+      });
+    }
+    for (const w of work.data ?? []) {
+      results.push({
+        entityType: 'work',
+        id: w.id,
+        title: w.organization,
+        snippet: w.role,
+        href: `/work/${w.id}`,
+        updatedAt: w.updated_at,
+      });
+    }
+    for (const s of skills.data ?? []) {
+      results.push({
+        entityType: 'skill',
+        id: s.id,
+        title: s.name,
+        snippet: s.category,
+        href: '/skills',
+        updatedAt: s.updated_at,
+      });
+    }
+    for (const j of journal.data ?? []) {
+      results.push({
+        entityType: 'journal',
+        id: j.id,
+        title: j.title || j.entry_date,
+        snippet: snippetOf(j.content),
+        href: `/journal?date=${j.entry_date}`,
+        updatedAt: j.updated_at,
+      });
+    }
+    for (const h of habits.data ?? []) {
+      results.push({
+        entityType: 'habit',
+        id: h.id,
+        title: h.name,
+        snippet: snippetOf(h.description),
+        href: '/habits',
+        updatedAt: h.updated_at,
       });
     }
 

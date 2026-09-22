@@ -39,10 +39,40 @@ export const NAV_ITEMS: NavItem[] = [
     icon: '✅',
   },
   {
+    id: 'work',
+    label: 'Work',
+    href: '/work',
+    icon: '💼',
+  },
+  {
+    id: 'skills',
+    label: 'Skills',
+    href: '/skills',
+    icon: '🧠',
+  },
+  {
+    id: 'journal',
+    label: 'Journal',
+    href: '/journal',
+    icon: '📔',
+  },
+  {
+    id: 'habits',
+    label: 'Habits',
+    href: '/habits',
+    icon: '🔁',
+  },
+  {
     id: 'archives',
     label: 'Archives',
     href: '/archives',
     icon: '🗄️',
+  },
+  {
+    id: 'export',
+    label: 'Export',
+    href: '/export',
+    icon: '📤',
   },
   {
     id: 'trash',

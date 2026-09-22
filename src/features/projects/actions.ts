@@ -154,6 +154,38 @@ export async function deleteProject(
   }
 }
 
+export async function updateProjectWork(
+  id: string,
+  workExperienceId: string | null
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return { success: false, error: 'User is not authenticated' };
+    }
+    const { error } = await supabase
+      .from('projects')
+      .update({ work_experience_id: workExperienceId })
+      .eq('id', id)
+      .eq('user_id', user.id);
+    if (error) {
+      console.error('Error updating project work link:', error);
+      return { success: false, error: error.message };
+    }
+    revalidatePath('/projects');
+    revalidatePath(`/projects/${id}`);
+    revalidatePath('/work');
+    return { success: true };
+  } catch (err) {
+    console.error('Unexpected error in updateProjectWork:', err);
+    return { success: false, error: 'An unexpected error occurred' };
+  }
+}
+
 export async function getProjectById(id: string): Promise<Project | null> {
   try {
     const supabase = await createClient();

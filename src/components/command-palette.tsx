@@ -17,6 +17,10 @@ const ENTITY_ICON: Record<SearchResult['entityType'], string> = {
   note: '📝',
   project: '📁',
   task: '✅',
+  work: '💼',
+  skill: '🧠',
+  journal: '📔',
+  habit: '🔁',
 };
 
 const ENTITY_LABEL: Record<SearchResult['entityType'], string> = {
@@ -24,6 +28,10 @@ const ENTITY_LABEL: Record<SearchResult['entityType'], string> = {
   note: 'Note',
   project: 'Project',
   task: 'Task',
+  work: 'Work',
+  skill: 'Skill',
+  journal: 'Journal',
+  habit: 'Habit',
 };
 
 interface CommandItem {
@@ -147,6 +155,10 @@ export function CommandPalette() {
     { id: 'new-project', label: 'New Project', hint: '/projects', icon: '📁', run: () => go('/projects') },
     { id: 'new-note', label: 'New Note', hint: '/notes', icon: '📝', run: () => go('/notes') },
     { id: 'new-task', label: 'New Task', hint: '/tasks', icon: '✅', run: () => go('/tasks') },
+    { id: 'new-work', label: 'New Workplace', hint: '/work', icon: '💼', run: () => go('/work') },
+    { id: 'new-skill', label: 'New Skill', hint: '/skills', icon: '🧠', run: () => go('/skills') },
+    { id: 'new-journal', label: "Today's Journal", hint: '/journal', icon: '📔', run: () => go('/journal') },
+    { id: 'new-habit', label: 'New Habit', hint: '/habits', icon: '🔁', run: () => go('/habits') },
   ];
 
   const q = query.trim().toLowerCase();

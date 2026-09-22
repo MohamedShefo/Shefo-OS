@@ -230,3 +230,19 @@ Review fixes applied in one pass: capture-list JSX paren, 5× `setState-in-effec
 
 Verification: `tsc` PASS, `lint` PASS, `build` PASS (13/13 pages incl. `/archives`), 8/8 routes HTTP 200 with auth gates intact and no error markers.
 Authenticated interactive testing remains blocked by the known remote Auth issue (no session obtainable) and no connected desktop browser — recorded, not caused by this phase.
+
+---
+
+## 10. Phase 4 — Work/Experience + Knowledge (Implemented)
+
+Single coherent batch. Migration `0005_phase4_work_knowledge.sql` applied remotely; history fully synced (`0000/0001/0002/0004/0005`).
+
+**Schema (all user-owned, RLS enforced, verified 4 policies × 9 tables):**
+- `work_experiences`, `skills`, `journal_entries` (unique live user+date), `habits`, `habit_completions` (unique habit+day, CASCADE), `note_blocks` (CASCADE), `note_links` (directed, no-self CHECK, CASCADE), `work_experience_skills`, `note_skills`.
+- Additive nullable columns: `notes.work_experience_id` + `notes.note_type`, `projects.work_experience_id` (all SET NULL).
+
+**App:** `/work`, `/work/[id]`, `/skills`, `/journal?date=`, `/habits`, `/notes/[id]` (blocks editor, split view, SVG graph, link/skill managers, meta editor), `/export` (JSON/Markdown/CSV). Notes Layer A extended in place (card edit + create dialog). Search covers work/skills/journal/habits; palette gained 4 commands; nav gained Work/Skills/Journal/Habits/Export.
+
+**Review fixes (one pass):** to-one embed casts normalized via `toOne` (+ trashed-skill filtering in relation lists), `classifyPara` made exhaustive for new entity types, empty-interface lint fix, `todayISO` extracted from `'use server'` modules to `src/lib/date.ts`, PostgREST embed hint names verified against live constraints.
+
+**Verification:** `tsc` PASS, `lint` PASS, `build` PASS (18/18 pages), 6/6 new routes HTTP 200 with auth gates intact and no error markers. Authenticated interactive testing still blocked by the known remote Auth login-500 issue (no Auth surgery performed).

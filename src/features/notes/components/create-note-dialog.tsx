@@ -2,20 +2,24 @@
 
 import { useState, useTransition, FormEvent } from 'react';
 import { createNote } from '../actions';
-import { Project } from '@/types/database';
+import { Project, WorkExperience } from '@/types/database';
 import { Button } from '@/components/ui/button';
+import { NOTE_TYPES } from './note-card';
 
 interface CreateNoteDialogProps {
   projects: Project[];
+  works?: WorkExperience[];
   onSuccess?: () => void;
 }
 
-export function CreateNoteDialog({ projects, onSuccess }: CreateNoteDialogProps) {
+export function CreateNoteDialog({ projects, works = [], onSuccess }: CreateNoteDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [tagsInput, setTagsInput] = useState('');
   const [projectId, setProjectId] = useState<string>('');
+  const [workId, setWorkId] = useState<string>('');
+  const [noteType, setNoteType] = useState<string>('note');
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -35,6 +39,8 @@ export function CreateNoteDialog({ projects, onSuccess }: CreateNoteDialogProps)
         content,
         tags,
         project_id: projectId || null,
+        work_experience_id: workId || null,
+        note_type: noteType || null,
       });
 
       if (res.success) {
@@ -42,6 +48,8 @@ export function CreateNoteDialog({ projects, onSuccess }: CreateNoteDialogProps)
         setContent('');
         setTagsInput('');
         setProjectId('');
+        setWorkId('');
+        setNoteType('note');
         setIsOpen(false);
         if (onSuccess) onSuccess();
       } else {
@@ -122,6 +130,42 @@ export function CreateNoteDialog({ projects, onSuccess }: CreateNoteDialogProps)
                 {projects.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Workplace (Optional)</label>
+              <select
+                value={workId}
+                onChange={(e) => setWorkId(e.target.value)}
+                disabled={isPending}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring/20"
+              >
+                <option value="">No Workplace Linked</option>
+                {works.map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.organization}
+                    {w.role ? ` · ${w.role}` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Type</label>
+              <select
+                value={noteType}
+                onChange={(e) => setNoteType(e.target.value)}
+                disabled={isPending}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring/20 capitalize"
+              >
+                {NOTE_TYPES.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
                   </option>
                 ))}
               </select>

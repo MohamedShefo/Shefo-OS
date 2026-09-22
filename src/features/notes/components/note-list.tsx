@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Note, Project } from '@/types/database';
+import { Note, Project, WorkExperience } from '@/types/database';
 import { NoteCard } from './note-card';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -10,9 +10,10 @@ import { EmptyState } from '@/components/common/empty-state';
 interface NoteListProps {
   initialNotes: Note[];
   projects: Project[];
+  works?: WorkExperience[];
 }
 
-export function NoteList({ initialNotes, projects }: NoteListProps) {
+export function NoteList({ initialNotes, projects, works = [] }: NoteListProps) {
   const [search, setSearch] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState<string>('all');
 
@@ -87,6 +88,7 @@ export function NoteList({ initialNotes, projects }: NoteListProps) {
               note={note}
               projectsMap={projectsMap}
               projects={projects}
+              works={works}
             />
           ))}
         </div>

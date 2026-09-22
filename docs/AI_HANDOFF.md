@@ -274,3 +274,32 @@ placement, MFA effect refactor, username null-safety, trashed-skill filtering.
 migration history synced through `0006`, new tables RLS-verified remotely,
 route smoke (see report). Authenticated interactive testing still blocked by
 the Auth issue above — recorded with repair procedure ready.
+
+---
+
+## 12. Phase 6 — Dashboard, Goals, Reports & Personal Finance (Implemented)
+
+Single coherent batch. Migration `0007_phase6_goals_finance.sql` applied remotely;
+history fully synced (`0000/0001/0002/0004/0005/0006/0007`).
+
+**Schema (user-owned, RLS verified 4 policies × 4 tables):**
+- `goals` (+ status CHECK) + `goal_milestones` (ordered, CASCADE).
+- `finance_transactions` (income/expense CHECK, non-negative amount, strictly
+  personal — no workspace column by design).
+- `dashboard_state` (one row per user: mode + widget id list).
+- Nullable `goal_id` links (SET NULL) on projects/tasks/habits/notes.
+
+**App:** Normal/Focus dashboard with 10-widget registry (show/hide/reorder/reset,
+persisted); `/goals` + `/goals/[id]` (progress semantics, milestones, attach
+managers); `/finance` (entry flow, filters, month summary, trend + donut);
+`/reports` (7/14/30/90d, server-side modular metrics, SVG charts); export
+extended (goals/finance CSVs + JSON); search + palette + nav cover new domains.
+
+**Review fixes (one pass):** embed-cast normalization pattern reused;
+`DashboardWidgetId`/constants extracted from `'use server'` modules;
+donut math made pure for the immutability lint; username null-safety carried over.
+
+**Verification:** `tsc` PASS, `lint` PASS (0/0), `build` PASS (24/24 pages),
+7/7 routes HTTP 200 with auth gates intact and no error markers.
+Authenticated interactive testing still blocked by the documented Auth
+login-500 (no Auth surgery performed).

@@ -40,7 +40,7 @@ export function ExportPanel() {
     downloadFile(`shefo-os-notes-${stamp()}.md`, bundleToMarkdown(bundle), 'text/markdown');
   };
 
-  const downloadCSV = (kind: 'projects' | 'tasks' | 'habits' | 'journal') => {
+  const downloadCSV = (kind: 'projects' | 'tasks' | 'habits' | 'journal' | 'goals' | 'finance') => {
     if (!bundle) return;
     if (kind === 'projects') {
       downloadFile(
@@ -63,6 +63,18 @@ export function ExportPanel() {
         ),
         'text/csv'
       );
+    } else if (kind === 'goals') {
+      downloadFile(
+        `shefo-os-goals-${stamp()}.csv`,
+        toCSV(bundle.goals, ['id', 'title', 'description', 'status', 'start_date', 'target_date', 'target_value', 'current_value', 'created_at']),
+        'text/csv'
+      );
+    } else if (kind === 'finance') {
+      downloadFile(
+        `shefo-os-finance-${stamp()}.csv`,
+        toCSV(bundle.finance, ['id', 'type', 'amount', 'transaction_date', 'category', 'description', 'payment_method', 'created_at']),
+        'text/csv'
+      );
     } else {
       downloadFile(
         `shefo-os-journal-${stamp()}.csv`,
@@ -78,8 +90,8 @@ export function ExportPanel() {
         <h2 className="text-sm font-semibold tracking-tight text-foreground">1 · Load your data</h2>
         <p className="text-xs text-muted-foreground">
           Builds an export bundle from everything you own — projects, notes (with blocks and
-          links), tasks, captures, work, skills, journal, and habits. Nothing leaves your browser
-          except the download itself.
+          links), tasks, captures, work, skills, journal, habits, goals, and finance. Nothing
+          leaves your browser except the download itself.
         </p>
         <Button size="sm" onClick={load} disabled={isPending}>
           {isPending ? 'Loading…' : bundle ? 'Reload Data' : 'Load My Data'}
@@ -90,7 +102,8 @@ export function ExportPanel() {
             Ready: {bundle.projects.length} projects · {bundle.notes.length} notes ·{' '}
             {bundle.tasks.length} tasks · {bundle.captures.length} captures · {bundle.work.length}{' '}
             workplaces · {bundle.skills.length} skills · {bundle.journal.length} journal entries ·{' '}
-            {bundle.habits.length} habits.
+            {bundle.habits.length} habits · {bundle.goals.length} goals · {bundle.finance.length}{' '}
+            transactions.
           </p>
         )}
       </div>
@@ -115,6 +128,12 @@ export function ExportPanel() {
           </Button>
           <Button size="sm" variant="outline" onClick={() => downloadCSV('journal')} disabled={!bundle} className="justify-start">
             📔 Journal (CSV)
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => downloadCSV('goals')} disabled={!bundle} className="justify-start">
+            🎯 Goals (CSV)
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => downloadCSV('finance')} disabled={!bundle} className="justify-start">
+            💰 Finance (CSV)
           </Button>
         </div>
         <p className="text-[11px] text-muted-foreground">

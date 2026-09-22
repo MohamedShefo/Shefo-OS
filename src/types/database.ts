@@ -24,6 +24,7 @@ export interface Project {
   status: ProjectStatus;
   work_experience_id: string | null;
   workspace_id: string | null;
+  goal_id: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -40,6 +41,7 @@ export interface Note {
   work_experience_id: string | null;
   note_type: string | null;
   workspace_id: string | null;
+  goal_id: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -56,6 +58,7 @@ export interface Task {
   project_id: string | null;
   note_id: string | null;
   source_capture_id: string | null;
+  goal_id: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -106,6 +109,7 @@ export interface Habit {
   description: string | null;
   frequency: string;
   is_active: boolean;
+  goal_id: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -154,6 +158,60 @@ export interface NoteSkill {
   note_id: string;
   skill_id: string;
   created_at: string;
+}
+
+export type GoalStatus = 'active' | 'paused' | 'completed' | 'archived';
+
+export interface Goal {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string | null;
+  status: GoalStatus;
+  start_date: string | null;
+  target_date: string | null;
+  target_value: number | null;
+  current_value: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export interface GoalMilestone {
+  id: string;
+  user_id: string;
+  goal_id: string;
+  title: string;
+  is_done: boolean;
+  position: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export type FinanceType = 'income' | 'expense';
+
+export interface FinanceTransaction {
+  id: string;
+  user_id: string;
+  type: string;
+  amount: number;
+  transaction_date: string;
+  category: string | null;
+  description: string | null;
+  payment_method: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export type DashboardMode = 'normal' | 'focus';
+
+export interface DashboardState {
+  id: string;
+  user_id: string;
+  mode: string;
+  widgets: string[];
+  updated_at: string;
 }
 
 export interface Profile {

@@ -21,7 +21,7 @@ export async function getExportBundle(): Promise<ExportBundle | null> {
     if (!ctx) return null;
     const uid = ctx.user.id;
 
-    const [projects, notes, blocks, links, tasks, captures, work, skills, journal, habits, completions] =
+    const [projects, notes, blocks, links, tasks, captures, work, skills, journal, habits, completions, goals, finance] =
       await Promise.all([
         ctx.supabase.from('projects').select('*').eq('user_id', uid).is('deleted_at', null),
         ctx.supabase.from('notes').select('*').eq('user_id', uid).is('deleted_at', null),
@@ -34,9 +34,11 @@ export async function getExportBundle(): Promise<ExportBundle | null> {
         ctx.supabase.from('journal_entries').select('*').eq('user_id', uid).is('deleted_at', null),
         ctx.supabase.from('habits').select('*').eq('user_id', uid).is('deleted_at', null),
         ctx.supabase.from('habit_completions').select('*').eq('user_id', uid),
+        ctx.supabase.from('goals').select('*').eq('user_id', uid).is('deleted_at', null),
+        ctx.supabase.from('finance_transactions').select('*').eq('user_id', uid).is('deleted_at', null),
       ]);
 
-    const errs = [projects, notes, blocks, links, tasks, captures, work, skills, journal, habits, completions]
+    const errs = [projects, notes, blocks, links, tasks, captures, work, skills, journal, habits, completions, goals, finance]
       .map((r) => r.error)
       .filter(Boolean);
     if (errs.length > 0) {
@@ -84,6 +86,8 @@ export async function getExportBundle(): Promise<ExportBundle | null> {
         ...h,
         completions: completionsByHabit.get(h.id) ?? [],
       })),
+      goals: goals.data ?? [],
+      finance: finance.data ?? [],
     } as ExportBundle;
   } catch (err) {
     console.error('Unexpected error in getExportBundle:', err);

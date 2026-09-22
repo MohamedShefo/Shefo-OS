@@ -21,6 +21,8 @@ const ENTITY_ICON: Record<SearchResult['entityType'], string> = {
   skill: '🧠',
   journal: '📔',
   habit: '🔁',
+  goal: '🎯',
+  finance: '💰',
 };
 
 const ENTITY_LABEL: Record<SearchResult['entityType'], string> = {
@@ -32,6 +34,8 @@ const ENTITY_LABEL: Record<SearchResult['entityType'], string> = {
   skill: 'Skill',
   journal: 'Journal',
   habit: 'Habit',
+  goal: 'Goal',
+  finance: 'Finance',
 };
 
 interface CommandItem {
@@ -159,6 +163,8 @@ export function CommandPalette() {
     { id: 'new-skill', label: 'New Skill', hint: '/skills', icon: '🧠', run: () => go('/skills') },
     { id: 'new-journal', label: "Today's Journal", hint: '/journal', icon: '📔', run: () => go('/journal') },
     { id: 'new-habit', label: 'New Habit', hint: '/habits', icon: '🔁', run: () => go('/habits') },
+    { id: 'new-goal', label: 'New Goal', hint: '/goals', icon: '🎯', run: () => go('/goals') },
+    { id: 'new-finance', label: 'Log Finance Entry', hint: '/finance', icon: '💰', run: () => go('/finance') },
   ];
 
   const q = query.trim().toLowerCase();

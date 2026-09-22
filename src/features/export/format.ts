@@ -1,5 +1,7 @@
 import type {
   Capture,
+  FinanceTransaction,
+  Goal,
   Habit,
   HabitCompletion,
   JournalEntry,
@@ -30,6 +32,8 @@ export interface ExportBundle {
   skills: Skill[];
   journal: JournalEntry[];
   habits: Array<Habit & { completions: string[] }>;
+  goals: Goal[];
+  finance: FinanceTransaction[];
 }
 
 function csvCell(value: unknown): string {

@@ -22,6 +22,7 @@ export interface UpdateNotePayload {
   project_id?: string | null;
   work_experience_id?: string | null;
   note_type?: string | null;
+  goal_id?: string | null;
 }
 
 export async function getNotes(workspaceId?: string | null): Promise<Note[]> {
@@ -131,6 +132,7 @@ export async function updateNote(
     if (payload.work_experience_id !== undefined)
       updateData.work_experience_id = payload.work_experience_id;
     if (payload.note_type !== undefined) updateData.note_type = payload.note_type?.trim() || null;
+    if (payload.goal_id !== undefined) updateData.goal_id = payload.goal_id;
 
     const { data, error } = await supabase
       .from('notes')

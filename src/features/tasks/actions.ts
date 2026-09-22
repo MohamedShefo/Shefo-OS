@@ -165,6 +165,37 @@ export async function deleteTask(
   }
 }
 
+export async function updateTaskGoal(
+  id: string,
+  goalId: string | null
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return { success: false, error: 'User is not authenticated' };
+    }
+    const { error } = await supabase
+      .from('tasks')
+      .update({ goal_id: goalId })
+      .eq('id', id)
+      .eq('user_id', user.id);
+    if (error) {
+      console.error('Error updating task goal link:', error);
+      return { success: false, error: error.message };
+    }
+    revalidatePath('/tasks');
+    revalidatePath('/goals');
+    return { success: true };
+  } catch (err) {
+    console.error('Unexpected error in updateTaskGoal:', err);
+    return { success: false, error: 'An unexpected error occurred' };
+  }
+}
+
 export async function getTasksByNote(noteId: string): Promise<Task[]> {
   try {
     const supabase = await createClient();

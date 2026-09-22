@@ -185,9 +185,42 @@ export async function updateProjectWork(
     revalidatePath('/projects');
     revalidatePath(`/projects/${id}`);
     revalidatePath('/work');
+    revalidatePath('/goals');
     return { success: true };
   } catch (err) {
     console.error('Unexpected error in updateProjectWork:', err);
+    return { success: false, error: 'An unexpected error occurred' };
+  }
+}
+
+export async function updateProjectGoal(
+  id: string,
+  goalId: string | null
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return { success: false, error: 'User is not authenticated' };
+    }
+    const { error } = await supabase
+      .from('projects')
+      .update({ goal_id: goalId })
+      .eq('id', id)
+      .eq('user_id', user.id);
+    if (error) {
+      console.error('Error updating project goal link:', error);
+      return { success: false, error: error.message };
+    }
+    revalidatePath('/projects');
+    revalidatePath(`/projects/${id}`);
+    revalidatePath('/goals');
+    return { success: true };
+  } catch (err) {
+    console.error('Unexpected error in updateProjectGoal:', err);
     return { success: false, error: 'An unexpected error occurred' };
   }
 }

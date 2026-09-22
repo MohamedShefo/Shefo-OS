@@ -155,6 +155,31 @@ export async function deleteHabit(id: string): Promise<{ success: boolean; error
   }
 }
 
+export async function updateHabitGoal(
+  id: string,
+  goalId: string | null
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const ctx = await authedUser();
+    if (!ctx) return { success: false, error: 'User is not authenticated' };
+    const { error } = await ctx.supabase
+      .from('habits')
+      .update({ goal_id: goalId })
+      .eq('id', id)
+      .eq('user_id', ctx.user.id);
+    if (error) {
+      console.error('Error updating habit goal link:', error);
+      return { success: false, error: error.message };
+    }
+    revalidatePath('/habits');
+    revalidatePath('/goals');
+    return { success: true };
+  } catch (err) {
+    console.error('Unexpected error in updateHabitGoal:', err);
+    return { success: false, error: 'An unexpected error occurred' };
+  }
+}
+
 /** Toggle today's completion (idempotent insert / delete). */
 export async function toggleHabitToday(
   habitId: string,

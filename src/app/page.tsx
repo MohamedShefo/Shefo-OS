@@ -5,11 +5,14 @@ import { getUnprocessedCaptures } from '@/features/captures/actions';
 import { getProjects } from '@/features/projects/actions';
 import { getNotes } from '@/features/notes/actions';
 import { getTasks } from '@/features/tasks/actions';
-import { CaptureInput } from '@/features/captures/components/capture-input';
+import { getHabits } from '@/features/habits/actions';
+import { getRecentJournalEntries } from '@/features/journal/actions';
+import { getGoals } from '@/features/goals/actions';
+import { getMonthSummary } from '@/features/finance/actions';
+import { getDashboardPrefs } from '@/features/dashboard/actions';
 import { Button } from '@/components/ui/button';
-import { normalizeTags } from '@/lib/utils';
 import { AppShell } from '@/components/shell/app-shell';
-import { PageHeader } from '@/components/common/page-header';
+import { DashboardClient } from '@/features/dashboard/dashboard-client';
 
 export const metadata = {
   title: 'Dashboard',
@@ -50,211 +53,53 @@ export default async function Home() {
     );
   }
 
-  // Authenticated user data fetching
-  const [captures, projects, notes, tasks] = await Promise.all([
-    getUnprocessedCaptures(),
-    getProjects(),
-    getNotes(),
-    getTasks(),
-  ]);
+  // Authenticated dashboard data (bounded lists; widgets narrow further).
+  const now = new Date();
+  const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const [captures, projects, notes, tasks, habits, journal, goals, financeSummary, prefs] =
+    await Promise.all([
+      getUnprocessedCaptures(),
+      getProjects(),
+      getNotes(),
+      getTasks(),
+      getHabits(),
+      getRecentJournalEntries(3),
+      getGoals('active'),
+      getMonthSummary(month),
+      getDashboardPrefs(),
+    ]);
 
-  const activeProjects = projects.filter((p) => p.status === 'active');
-  const pendingTasks = tasks.filter((t) => t.status !== 'done');
-  const topCaptures = captures.slice(0, 3);
-  const topNotes = notes.slice(0, 3);
-  const topTasks = pendingTasks.slice(0, 4);
-  const topProjects = activeProjects.slice(0, 3);
+  const doneTasks = tasks.filter((t) => t.status === 'done');
 
   return (
     <AppShell userEmail={user.email}>
-      {/* Top Header */}
-      <PageHeader
-        title="Shefo OS Command Center"
-        description={`Welcome back, ${user.email}`}
-        actions={
-          <>
-            <Link href="/capture">
-              <Button size="sm" variant="default">⚡ Capture</Button>
-            </Link>
-            <Link href="/projects">
-              <Button size="sm" variant="secondary">📁 Projects</Button>
-            </Link>
-            <Link href="/notes">
-              <Button size="sm" variant="outline">📝 Notes</Button>
-            </Link>
-            <Link href="/tasks">
-              <Button size="sm" variant="outline">✅ Tasks</Button>
-            </Link>
-            <form action={logout}>
-              <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-destructive">
-                Sign Out
-              </Button>
-            </form>
-          </>
-        }
+      <DashboardClient
+        email={user.email ?? null}
+        data={{
+          captures: captures.slice(0, 20),
+          projects,
+          notes: notes.slice(0, 20),
+          tasks,
+          habits,
+          journal,
+          goals,
+          financeSummary,
+          financeMonth: month,
+          activity: {
+            captures: captures.length,
+            tasksDone: doneTasks.length,
+            tasksTotal: tasks.length,
+            notes: notes.length,
+            activeProjects: projects.filter((p) => p.status === 'active').length,
+          },
+        }}
+        initialPrefs={prefs}
       />
-
-        {/* Stats Metrics Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-4 rounded-xl border border-border bg-card shadow-xs space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">Unprocessed Inbox</p>
-            <p className="text-2xl font-bold">{captures.length}</p>
-          </div>
-          <div className="p-4 rounded-xl border border-border bg-card shadow-xs space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">Pending Tasks</p>
-            <p className="text-2xl font-bold">{pendingTasks.length}</p>
-          </div>
-          <div className="p-4 rounded-xl border border-border bg-card shadow-xs space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">Active Projects</p>
-            <p className="text-2xl font-bold">{activeProjects.length}</p>
-          </div>
-          <div className="p-4 rounded-xl border border-border bg-card shadow-xs space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">Total Notes</p>
-            <p className="text-2xl font-bold">{notes.length}</p>
-          </div>
-        </div>
-
-        {/* Inline Fast Capture Section */}
-        <div className="p-6 rounded-xl border border-border bg-card shadow-xs space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold tracking-tight">Instant Thought Capture</h2>
-            <span className="text-xs text-muted-foreground">Press Enter ↵ to capture</span>
-          </div>
-          <CaptureInput />
-        </div>
-
-        {/* 2x2 Command Center Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Card 1: Urgent & Pending Tasks */}
-          <div className="p-5 rounded-xl border border-border bg-card shadow-xs flex flex-col justify-between space-y-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between border-b border-border/50 pb-2">
-                <h3 className="font-semibold text-sm flex items-center gap-2">
-                  ✅ Pending Tasks ({pendingTasks.length})
-                </h3>
-                <Link href="/tasks" className="text-xs text-primary hover:underline font-medium">
-                  View All →
-                </Link>
-              </div>
-
-              {topTasks.length === 0 ? (
-                <p className="text-xs text-muted-foreground py-4 text-center">No pending tasks.</p>
-              ) : (
-                <div className="space-y-2">
-                  {topTasks.map((t) => (
-                    <div key={t.id} className="flex items-center justify-between p-2.5 rounded-md bg-muted/40 text-xs border border-border/50">
-                      <span className="font-medium text-foreground truncate max-w-[200px]">{t.title}</span>
-                      <div className="flex items-center gap-2">
-                        {t.priority && (
-                          <span className="px-1.5 py-0.5 rounded text-[10px] uppercase font-semibold bg-primary/10 text-primary">
-                            {t.priority}
-                          </span>
-                        )}
-                        <span className="capitalize text-[10px] text-muted-foreground">{t.status.replace('_', ' ')}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Card 2: Active Projects */}
-          <div className="p-5 rounded-xl border border-border bg-card shadow-xs flex flex-col justify-between space-y-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between border-b border-border/50 pb-2">
-                <h3 className="font-semibold text-sm flex items-center gap-2">
-                  📁 Active Projects ({activeProjects.length})
-                </h3>
-                <Link href="/projects" className="text-xs text-primary hover:underline font-medium">
-                  View All →
-                </Link>
-              </div>
-
-              {topProjects.length === 0 ? (
-                <p className="text-xs text-muted-foreground py-4 text-center">No active projects.</p>
-              ) : (
-                <div className="space-y-2">
-                  {topProjects.map((p) => (
-                    <div key={p.id} className="p-2.5 rounded-md bg-muted/40 text-xs border border-border/50 space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold text-foreground">{p.name}</span>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 capitalize">
-                          {p.status}
-                        </span>
-                      </div>
-                      {p.description && (
-                        <p className="text-[11px] text-muted-foreground line-clamp-1">{p.description}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Card 3: Recent Notes */}
-          <div className="p-5 rounded-xl border border-border bg-card shadow-xs flex flex-col justify-between space-y-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between border-b border-border/50 pb-2">
-                <h3 className="font-semibold text-sm flex items-center gap-2">
-                  📝 Recent Notes & Concepts ({notes.length})
-                </h3>
-                <Link href="/notes" className="text-xs text-primary hover:underline font-medium">
-                  View All →
-                </Link>
-              </div>
-
-              {topNotes.length === 0 ? (
-                <p className="text-xs text-muted-foreground py-4 text-center">No notes created yet.</p>
-              ) : (
-                <div className="space-y-2">
-                  {topNotes.map((n) => {
-                    const tags = normalizeTags(n.tags);
-                    return (
-                      <div key={n.id} className="p-2.5 rounded-md bg-muted/40 text-xs border border-border/50 space-y-1">
-                        <span className="font-semibold text-foreground block">{n.title}</span>
-                        {tags.length > 0 && (
-                          <div className="flex gap-1 flex-wrap">
-                            {tags.map((tag) => (
-                              <span key={tag} className="text-[10px] text-muted-foreground">#{tag}</span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Card 4: Unprocessed Captures */}
-          <div className="p-5 rounded-xl border border-border bg-card shadow-xs flex flex-col justify-between space-y-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between border-b border-border/50 pb-2">
-                <h3 className="font-semibold text-sm flex items-center gap-2">
-                  📥 Unprocessed Inbox ({captures.length})
-                </h3>
-                <Link href="/capture" className="text-xs text-primary hover:underline font-medium">
-                  Process Inbox →
-                </Link>
-              </div>
-
-              {topCaptures.length === 0 ? (
-                <p className="text-xs text-muted-foreground py-4 text-center">Inbox is empty.</p>
-              ) : (
-                <div className="space-y-2">
-                  {topCaptures.map((c) => (
-                    <div key={c.id} className="p-2.5 rounded-md bg-muted/40 text-xs border border-border/50 text-muted-foreground truncate">
-                      {c.raw_text}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+      <form action={logout} className="flex justify-end px-1">
+        <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-destructive">
+          Sign Out
+        </Button>
+      </form>
     </AppShell>
   );
 }

@@ -8,7 +8,9 @@ export type SearchResultEntity =
   | 'work'
   | 'skill'
   | 'journal'
-  | 'habit';
+  | 'habit'
+  | 'goal'
+  | 'finance';
 
 export interface SearchResult {
   entityType: SearchResultEntity;
@@ -51,7 +53,7 @@ export async function globalSearch(query: string): Promise<SearchResult[]> {
     // query containing those characters degrades to a simpler match, not an error.
     const orPattern = `%${q.replace(/[%_\\]/g, '\\$&').replace(/[,()]/g, '')}%`;
 
-    const [captures, notes, projects, tasks, work, skills, journal, habits] = await Promise.all([
+    const [captures, notes, projects, tasks, work, skills, journal, habits, goals, finance] = await Promise.all([
       supabase
         .from('captures')
         .select('id, raw_text, updated_at')
@@ -114,6 +116,22 @@ export async function globalSearch(query: string): Promise<SearchResult[]> {
         .eq('user_id', user.id)
         .is('deleted_at', null)
         .ilike('name', pattern)
+        .order('updated_at', { ascending: false })
+        .limit(4),
+      supabase
+        .from('goals')
+        .select('id, title, description, updated_at')
+        .eq('user_id', user.id)
+        .is('deleted_at', null)
+        .or(`title.ilike.${orPattern},description.ilike.${orPattern}`)
+        .order('updated_at', { ascending: false })
+        .limit(4),
+      supabase
+        .from('finance_transactions')
+        .select('id, description, category, updated_at')
+        .eq('user_id', user.id)
+        .is('deleted_at', null)
+        .or(`description.ilike.${orPattern},category.ilike.${orPattern}`)
         .order('updated_at', { ascending: false })
         .limit(4),
     ]);
@@ -198,6 +216,26 @@ export async function globalSearch(query: string): Promise<SearchResult[]> {
         snippet: snippetOf(h.description),
         href: '/habits',
         updatedAt: h.updated_at,
+      });
+    }
+    for (const g of goals.data ?? []) {
+      results.push({
+        entityType: 'goal',
+        id: g.id,
+        title: g.title,
+        snippet: snippetOf(g.description),
+        href: `/goals/${g.id}`,
+        updatedAt: g.updated_at,
+      });
+    }
+    for (const f of finance.data ?? []) {
+      results.push({
+        entityType: 'finance',
+        id: f.id,
+        title: f.description || f.category || 'Transaction',
+        snippet: null,
+        href: '/finance',
+        updatedAt: f.updated_at,
       });
     }
 

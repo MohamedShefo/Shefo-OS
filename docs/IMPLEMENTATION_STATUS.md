@@ -46,6 +46,14 @@
 | **Activity / Location** | Complete (Phase 5) | Build OK | Opt-in approximate location (~1km), admin/owner-only visibility, self-only otherwise, no tracking, never auth-relevant. |
 | **Security Events** | Complete (Phase 5) | Build OK | Append-only log (login, signup, devices, MFA, password, workspace changes); owner-read, immutable. |
 | **Session Controls** | Complete (Phase 5) | Build OK | `/security` hub: session info, logout, password change, devices, MFA, events, location consent. |
+| **Dashboard Modes** | Complete (Phase 6) | Build OK | Normal (dense, customizable) + Focus (minimal: capture/tasks/timer/habits); persisted per-user; responsive; shell preserved. |
+| **Widget System** | Complete (Phase 6) | Build OK | 10 widgets (tasks/projects/notes/captures/habits/journal/timer/goals/finance/activity); show/hide + reorder + reset, persisted in `dashboard_state`. No framework. |
+| **Goals** | Complete (Phase 6) | Build OK | `goals` + `goal_milestones`; status/dates/measurable targets; `/goals` + `/goals/[id]` (progress, milestones, attach projects/tasks/notes/habits via nullable FKs). Manual only. |
+| **Reports** | Complete (Phase 6) | Build OK | 7/14/30/90-day periods; server-side modular metrics (honest: no invented completion dates); metric cards + trends. |
+| **Analytics Charts** | Complete (Phase 6) | Build OK | Pure-SVG Bar + Donut (`src/components/common/charts.tsx`) with legends, empty states, ARIA labels. No chart library. |
+| **Personal Finance** | Complete (Phase 6) | Build OK | `finance_transactions` (user-only, never workspace-scoped); daily entry, filters (type/category/month/search), monthly summary + category donut + net trend. |
+| **Monthly Analysis** | Complete (Phase 6) | Build OK | Server-side month aggregation (income/expenses/net/categories) + prev-month comparison. |
+| **Export Compat** | Complete (Phase 6) | Build OK | Bundle + panel extended with goals and finance CSVs; JSON auto-includes. |
 
 ---
 

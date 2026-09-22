@@ -21,6 +21,14 @@
 | **Tasks Tracker** | Complete | Build OK | Rendered inside `AppShell` with `PageHeader`, `Select`, & `EmptyState`. |
 | **Cross-Module Linking** | Complete (linking slice) | Build OK | Optional nullable FKs only: `captures.project_id`, `tasks.source_capture_id` (new, migration `0001_cross_links.sql` — must be applied to remote); existing `notes.project_id`, `notes.source_capture_id`, `tasks.project_id`, `tasks.note_id` preserved. Project hub at `/projects/[id]` shows linked Captures/Notes/Tasks. |
 | **Trash Lifecycle View** | Complete (Phase 3 slice) | Build OK | `/trash` route in `AppShell` with `PageHeader`, entity filter tabs, `EmptyState`; `getTrashedItems` / `restoreItem` / `permanentlyDeleteItem` Server Actions in `src/features/trash/`; nav entry in `NAV_ITEMS`. No schema change. |
+| **Global Search** | Complete (Phase 3) | Build OK | `globalSearch` Server Action (`src/features/search/actions.ts`): user-scoped `ilike` over captures/notes/projects/tasks, 6-per-type limit, recency ordering, entity type + click-through href. |
+| **Command Palette** | Complete (Phase 3) | Build OK | `src/components/command-palette.tsx` (⌘K/Ctrl+K, Esc/arrows/Enter, quick-capture row, navigation + new-item commands, search results with type badges, loading/empty/error states). Mounted in `AppShell`; triggers in sidebar + mobile header. |
+| **Filters Foundation** | Complete (Phase 3) | Build OK | Shared debounced `SearchField` + `matchesQuery` (`src/components/common/search-field.tsx`, `src/lib/search.ts`) wired into Capture/Project/Task lists (Notes already had search). Client-side narrowing of server-fetched rows only. |
+| **Floating Capture** | Complete (Phase 3) | Build OK | `src/components/floating-capture.tsx`: bottom-end FAB + expandable composer, hide/show persisted, RTL-aware logical properties, mobile-sized, CSS-only animation. Mounted in `AppShell`. |
+| **Timer Engine** | Complete (Phase 3) | Build OK | `useTimer` hook (`src/features/timer/use-timer.ts`: countdown, start/pause/resume/reset, wall-clock accuracy, localStorage persistence, no Task/Calendar coupling) + `TimerWidget` (`src/components/timer-widget.tsx`: presets, progress bar, title countdown). Mounted in `AppShell`. |
+| **PARA Foundation** | Complete (Phase 3) | Build OK | `src/types/para.ts` (buckets, registry, `classifyPara` with trash/archive separation) + `/archives` route (paused/completed projects only, Trash excluded). No migration. |
+| **Unified Shell** | Complete (Phase 3) | Build OK | `Breadcrumbs` (registry-driven), palette/capture/timer mounts, search entry points, theme toggle placement. No Normal/Focus dashboard system (deferred). |
+| **Visual Identity + Motion** | Complete (Phase 3) | Build OK | Dark-by-default with persisted light-mode toggle (FOUC-safe pre-paint script), CSS-only transitions, global `prefers-reduced-motion` guard. No animation libraries added. |
 
 ---
 

@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { NAV_ITEMS } from '@/config/navigation';
 import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { openCommandPalette } from '@/components/command-palette';
 import { logout } from '@/app/auth-actions';
 
 interface SidebarProps {
@@ -33,6 +35,14 @@ export function Sidebar({ userEmail }: SidebarProps) {
 
         {/* Navigation Items */}
         <nav className="space-y-1">
+          <button
+            onClick={openCommandPalette}
+            className="flex w-full items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-all text-muted-foreground hover:bg-muted hover:text-foreground border border-dashed border-border"
+          >
+            <span className="text-sm">🔍</span>
+            <span className="truncate flex-1 text-start">Search or command…</span>
+            <kbd className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px]">⌘K</kbd>
+          </button>
           {NAV_ITEMS.map((item) => {
             const isActive =
               item.href === '/'
@@ -60,9 +70,17 @@ export function Sidebar({ userEmail }: SidebarProps) {
       {/* User Footer & Logout */}
       <div className="border-t border-border pt-4 space-y-3">
         {userEmail && (
-          <div className="px-2">
-            <p className="text-[10px] text-muted-foreground uppercase font-medium">Logged in as</p>
-            <p className="text-xs font-semibold text-foreground truncate">{userEmail}</p>
+          <div className="px-2 flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-[10px] text-muted-foreground uppercase font-medium">Logged in as</p>
+              <p className="text-xs font-semibold text-foreground truncate">{userEmail}</p>
+            </div>
+            <ThemeToggle />
+          </div>
+        )}
+        {!userEmail && (
+          <div className="px-2 flex justify-end">
+            <ThemeToggle />
           </div>
         )}
         <form action={logout}>

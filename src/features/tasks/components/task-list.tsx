@@ -5,6 +5,8 @@ import { Capture, Note, Task, Project, TaskStatus, TaskPriority } from '@/types/
 import { TaskItem } from './task-item';
 import { Select } from '@/components/ui/select';
 import { EmptyState } from '@/components/common/empty-state';
+import { SearchField } from '@/components/common/search-field';
+import { matchesQuery } from '@/lib/search';
 
 interface TaskListProps {
   initialTasks: Task[];
@@ -17,6 +19,7 @@ export function TaskList({ initialTasks, projects, notes = [], captures = [] }: 
   const [statusFilter, setStatusFilter] = useState<'all' | TaskStatus>('all');
   const [priorityFilter, setPriorityFilter] = useState<'all' | TaskPriority>('all');
   const [selectedProjectId, setSelectedProjectId] = useState<string>('all');
+  const [search, setSearch] = useState('');
 
   const projectsMap: Record<string, string> = {};
   projects.forEach((p) => {
@@ -37,7 +40,7 @@ export function TaskList({ initialTasks, projects, notes = [], captures = [] }: 
     if (statusFilter !== 'all' && task.status !== statusFilter) return false;
     if (priorityFilter !== 'all' && task.priority !== priorityFilter) return false;
     if (selectedProjectId !== 'all' && task.project_id !== selectedProjectId) return false;
-    return true;
+    return matchesQuery([task.title, task.description], search);
   });
 
   if (initialTasks.length === 0) {
@@ -70,8 +73,9 @@ export function TaskList({ initialTasks, projects, notes = [], captures = [] }: 
           ))}
         </div>
 
-        {/* Priority & Project Selectors */}
-        <div className="flex items-center gap-2">
+        {/* Priority, Project & Text Selectors */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <SearchField value={search} onChange={setSearch} placeholder="Search tasks…" />
           <Select
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value as 'all' | TaskPriority)}

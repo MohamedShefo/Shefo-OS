@@ -39,6 +39,12 @@ export const NAV_ITEMS: NavItem[] = [
     icon: '✅',
   },
   {
+    id: 'archives',
+    label: 'Archives',
+    href: '/archives',
+    icon: '🗄️',
+  },
+  {
     id: 'trash',
     label: 'Trash',
     href: '/trash',

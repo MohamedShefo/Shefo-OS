@@ -1,11 +1,13 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { Capture, Project } from '@/types/database';
 import { deleteCapture } from '../actions';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/common/empty-state';
+import { SearchField } from '@/components/common/search-field';
+import { matchesQuery } from '@/lib/search';
 
 interface CaptureListProps {
   initialCaptures: Capture[];
@@ -23,6 +25,7 @@ export function CaptureList({
   emptyDescription = 'Use the capture box above to offload thoughts instantly.',
 }: CaptureListProps) {
   const [isPending, startTransition] = useTransition();
+  const [search, setSearch] = useState('');
 
   const projectsMap: Record<string, string> = {};
   projects.forEach((p) => {
@@ -39,17 +42,25 @@ export function CaptureList({
     return <EmptyState title={emptyTitle} description={emptyDescription} />;
   }
 
+  const visibleCaptures = initialCaptures.filter((item) => matchesQuery([item.raw_text], search));
+
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between px-1">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1">
         <h2 className="text-sm font-semibold tracking-tight text-foreground flex items-center gap-2">
           {heading}
           <Badge variant="secondary">{initialCaptures.length}</Badge>
         </h2>
+        <SearchField value={search} onChange={setSearch} placeholder="Search captures…" />
       </div>
 
       <div className="space-y-2">
-        {initialCaptures.map((item) => (
+        {visibleCaptures.length === 0 ? (
+          <div className="p-8 text-center text-xs text-muted-foreground">
+            No captures match your search.
+          </div>
+        ) : (
+          visibleCaptures.map((item) => (
           <div
             key={item.id}
             className="group flex items-start justify-between p-4 rounded-lg border border-border bg-card text-card-foreground shadow-xs hover:border-ring/30 transition-all"
@@ -78,7 +89,8 @@ export function CaptureList({
               Archive
             </Button>
           </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );

@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { NAV_ITEMS } from '@/config/navigation';
 import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { openCommandPalette } from '@/components/command-palette';
 
 interface HeaderProps {
   userEmail?: string | null;
@@ -32,6 +34,17 @@ export function Header({ userEmail }: HeaderProps) {
         >
           {mobileMenuOpen ? '✕ Close' : '☰ Menu'}
         </Button>
+      </div>
+
+      <div className="mt-3 flex items-center gap-2">
+        <button
+          onClick={openCommandPalette}
+          className="flex flex-1 items-center gap-2 rounded-lg border border-dashed border-border px-3 py-1.5 text-xs text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
+        >
+          <span aria-hidden="true">🔍</span>
+          <span className="truncate">Search or command…</span>
+        </button>
+        <ThemeToggle />
       </div>
 
       {/* Mobile Drawer Menu */}

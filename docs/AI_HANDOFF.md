@@ -209,3 +209,24 @@ table, no many-to-many, no mandatory relations, `ON DELETE SET NULL` throughout.
 Verification: `tsc` PASS, `lint` PASS, `build` PASS (`/projects/[id]` listed), affected
 routes (`/capture`, `/tasks`, `/projects`, `/notes`) all 200 with no error markers.
 Dashboard untouched (no new queries, no optimization).
+
+---
+
+## 9. Phase 3 — System Expansion Foundation (Implemented)
+
+Single coherent batch (no migrations, no new dependencies, no Auth surgery):
+
+1. **Global Search** — `src/features/search/actions.ts`.
+2. **Command Palette** — `src/components/command-palette.tsx` (+⌘K, quick capture, navigation, results).
+3. **Filters Foundation** — `src/components/common/search-field.tsx` + `src/lib/search.ts`, wired into Capture/Project/Task lists.
+4. **Floating Capture** — `src/components/floating-capture.tsx` (shell-wide, hideable, RTL-aware).
+5. **Timer Engine** — `src/features/timer/use-timer.ts` + `src/components/timer-widget.tsx` (no Task/Calendar coupling).
+6. **PARA Foundation** — `src/types/para.ts` + `/archives` route (archive ≠ trash, enforced in `classifyPara`).
+7. **Unified Shell** — `Breadcrumbs`, overlay mounts, palette entry points, theme toggle placement.
+8. **Visual Identity + Motion** — dark-by-default + light toggle, FOUC-safe init, reduced-motion guard.
+9. **Perf/Security** — server-side search with limits, user scoping everywhere, LIKE escaping (+ `or=` sanitization), no full-table reads, no new indexes needed at personal scale, no service-role exposure.
+
+Review fixes applied in one pass: capture-list JSX paren, 5× `setState-in-effect` lint refactors (lazy init + render-time adjustment + async-callback sets), hydration guards (`suppressHydrationWarning`) on persisted-preference widgets, PostgREST `or=` sanitization.
+
+Verification: `tsc` PASS, `lint` PASS, `build` PASS (13/13 pages incl. `/archives`), 8/8 routes HTTP 200 with auth gates intact and no error markers.
+Authenticated interactive testing remains blocked by the known remote Auth issue (no session obtainable) and no connected desktop browser — recorded, not caused by this phase.

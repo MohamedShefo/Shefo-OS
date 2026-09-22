@@ -8,15 +8,17 @@ import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { openCommandPalette } from '@/components/command-palette';
 import { WorkspaceSwitcher } from '@/features/workspaces/components/workspace-switcher';
+import { NotificationBell } from '@/features/notifications/components/notification-bell';
 import type { WorkspaceWithRole } from '@/features/workspaces/actions';
 
 interface HeaderProps {
   userEmail?: string | null;
   workspaces?: WorkspaceWithRole[];
   currentWorkspaceId?: string | null;
+  unreadCount?: number;
 }
 
-export function Header({ userEmail, workspaces = [], currentWorkspaceId = null }: HeaderProps) {
+export function Header({ userEmail, workspaces = [], currentWorkspaceId = null, unreadCount = 0 }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
@@ -48,6 +50,7 @@ export function Header({ userEmail, workspaces = [], currentWorkspaceId = null }
           <span aria-hidden="true">🔍</span>
           <span className="truncate">Search or command…</span>
         </button>
+        {userEmail && <NotificationBell initialUnread={unreadCount} />}
         <ThemeToggle />
       </div>
 

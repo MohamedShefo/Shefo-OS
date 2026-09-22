@@ -306,6 +306,26 @@ login-500 (no Auth surgery performed).
 
 ---
 
+## 14. Phase 7 — Extensions Foundation (Implemented)
+
+Minimal production-safe batch, no redesign:
+- **Global search foundation:** new `/search?q=` page (server-rendered, grouped
+  by entity with badges/links/empty states) on top of the existing `globalSearch`
+  action; palette + sidebar/mobile entry points unchanged.
+- **Notifications foundation:** `0009_notifications.sql` applied remotely
+  (owner-scoped table, RLS + 4 policies verified live); actions for
+  unread-count/list/read/mark-all plus a self-only create helper for future
+  producers; shell bell with unread badge + panel on desktop and mobile.
+  No push, email, SMS, automation, or third-party services.
+- **Extension architecture:** `src/extensions/README.md` recipe only —
+  migration → types → actions → UI → shell registration. No runtime abstraction.
+
+**Verification:** `tsc` PASS, `lint` PASS, `build` PASS (25/25 incl. `/search`),
+history synced through `0009`, 4/4 routes HTTP 200 with gates intact and no
+error markers. Authenticated testing still blocked by the documented Auth issue.
+
+---
+
 ## 13. Phase 6 Correction Pass — CLOSED
 
 - **Theme script:** raw `<script dangerouslySetInnerHTML>` in root layout replaced

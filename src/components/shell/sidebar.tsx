@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { openCommandPalette } from '@/components/command-palette';
 import { WorkspaceSwitcher } from '@/features/workspaces/components/workspace-switcher';
+import { NotificationBell } from '@/features/notifications/components/notification-bell';
 import type { WorkspaceWithRole } from '@/features/workspaces/actions';
 import { logout } from '@/app/auth-actions';
 
@@ -14,9 +15,10 @@ interface SidebarProps {
   userEmail?: string | null;
   workspaces?: WorkspaceWithRole[];
   currentWorkspaceId?: string | null;
+  unreadCount?: number;
 }
 
-export function Sidebar({ userEmail, workspaces = [], currentWorkspaceId = null }: SidebarProps) {
+export function Sidebar({ userEmail, workspaces = [], currentWorkspaceId = null, unreadCount = 0 }: SidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -84,7 +86,10 @@ export function Sidebar({ userEmail, workspaces = [], currentWorkspaceId = null 
               <p className="text-[10px] text-muted-foreground uppercase font-medium">Logged in as</p>
               <p className="text-xs font-semibold text-foreground truncate">{userEmail}</p>
             </div>
-            <ThemeToggle />
+            <span className="flex items-center gap-1 shrink-0">
+              <NotificationBell initialUnread={unreadCount} />
+              <ThemeToggle />
+            </span>
           </div>
         )}
         {!userEmail && (

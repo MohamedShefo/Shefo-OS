@@ -54,6 +54,9 @@
 | **Personal Finance** | Complete (Phase 6) | Build OK | `finance_transactions` (user-only, never workspace-scoped); daily entry, filters (type/category/month/search), monthly summary + category donut + net trend. |
 | **Monthly Analysis** | Complete (Phase 6) | Build OK | Server-side month aggregation (income/expenses/net/categories) + prev-month comparison. |
 | **Export Compat** | Complete (Phase 6) | Build OK | Bundle + panel extended with goals and finance CSVs; JSON auto-includes. |
+| **Unified Search Page** | Complete (Phase 7) | Build OK | `/search?q=` server-rendered grouped results reusing `globalSearch` + shared primitives. Palette remains the instant entry. |
+| **Notifications** | Complete (Phase 7 foundation) | Build OK | `notifications` table (RLS verified); list/unread-count/read/mark-all + self-only create helper; shell bell with badge + panel (desktop + mobile). No push/email/automation. |
+| **Extension Recipe** | Complete (Phase 7) | Docs | `src/extensions/README.md` codifies the module pattern (migration → types → actions → UI → shell). No runtime abstraction. |
 
 ---
 

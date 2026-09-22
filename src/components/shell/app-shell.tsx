@@ -7,6 +7,7 @@ import { FloatingCapture } from '@/components/floating-capture';
 import { TimerWidget } from '@/components/timer-widget';
 import { ShellTrackers } from '@/components/shell-trackers';
 import { getMyWorkspaces, getCurrentWorkspaceId } from '@/features/workspaces/actions';
+import { getUnreadCount } from '@/features/notifications/actions';
 
 export interface AppShellProps {
   children: React.ReactNode;
@@ -18,10 +19,12 @@ export async function AppShell({ children, userEmail }: AppShellProps) {
   // signed in (public landing), skip workspace loading entirely.
   let workspaces: Awaited<ReturnType<typeof getMyWorkspaces>> = [];
   let currentWorkspaceId: string | null = null;
+  let unreadCount = 0;
   if (userEmail) {
-    [workspaces, currentWorkspaceId] = await Promise.all([
+    [workspaces, currentWorkspaceId, unreadCount] = await Promise.all([
       getMyWorkspaces(),
       getCurrentWorkspaceId(),
+      getUnreadCount(),
     ]);
     if (currentWorkspaceId && !workspaces.some((w) => w.id === currentWorkspaceId)) {
       currentWorkspaceId = null;
@@ -30,9 +33,9 @@ export async function AppShell({ children, userEmail }: AppShellProps) {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col md:flex-row w-full">
-      <Sidebar userEmail={userEmail} workspaces={workspaces} currentWorkspaceId={currentWorkspaceId} />
+      <Sidebar userEmail={userEmail} workspaces={workspaces} currentWorkspaceId={currentWorkspaceId} unreadCount={unreadCount} />
       <div className="flex-1 flex flex-col min-w-0">
-        <Header userEmail={userEmail} workspaces={workspaces} currentWorkspaceId={currentWorkspaceId} />
+        <Header userEmail={userEmail} workspaces={workspaces} currentWorkspaceId={currentWorkspaceId} unreadCount={unreadCount} />
         <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 md:p-8 space-y-6">
           <Breadcrumbs />
           {children}

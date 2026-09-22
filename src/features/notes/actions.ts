@@ -172,3 +172,35 @@ export async function deleteNote(
     return { success: false, error: 'An unexpected error occurred' };
   }
 }
+
+export async function getNotesByProject(projectId: string): Promise<Note[]> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return [];
+    }
+
+    const { data, error } = await supabase
+      .from('notes')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('project_id', projectId)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching notes by project:', error.message || error);
+      return [];
+    }
+
+    return (data as Note[]) || [];
+  } catch (err) {
+    console.error('Unexpected error in getNotesByProject:', err);
+    return [];
+  }
+}

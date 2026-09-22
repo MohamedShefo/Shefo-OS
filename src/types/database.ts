@@ -10,6 +10,7 @@ export interface Capture {
   status: CaptureStatus;
   suggested_type: string | null;
   processed_at: string | null;
+  project_id: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -49,6 +50,7 @@ export interface Task {
   due_date: string | null;
   project_id: string | null;
   note_id: string | null;
+  source_capture_id: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;

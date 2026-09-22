@@ -1,6 +1,7 @@
 'use client';
 
 import { useTransition } from 'react';
+import Link from 'next/link';
 import { Project, ProjectStatus } from '@/types/database';
 import { updateProjectStatus, deleteProject } from '../actions';
 import { Button } from '@/components/ui/button';
@@ -34,9 +35,11 @@ export function ProjectCard({ project }: ProjectCardProps) {
     <div className="group relative flex flex-col justify-between rounded-xl border border-border bg-card p-5 shadow-xs hover:border-ring/40 transition-all">
       <div className="space-y-2">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="font-semibold text-base leading-tight tracking-tight text-foreground">
-            {project.name}
-          </h3>
+          <Link href={`/projects/${project.id}`} className="hover:underline underline-offset-4">
+            <h3 className="font-semibold text-base leading-tight tracking-tight text-foreground">
+              {project.name}
+            </h3>
+          </Link>
           <span
             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border capitalize ${
               statusColors[project.status]

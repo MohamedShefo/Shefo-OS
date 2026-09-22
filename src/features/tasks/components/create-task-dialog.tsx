@@ -2,15 +2,17 @@
 
 import { useState, useTransition, FormEvent } from 'react';
 import { createTask } from '../actions';
-import { Project, TaskPriority, TaskStatus } from '@/types/database';
+import { Capture, Note, Project, TaskPriority, TaskStatus } from '@/types/database';
 import { Button } from '@/components/ui/button';
 
 interface CreateTaskDialogProps {
   projects: Project[];
+  notes?: Note[];
+  captures?: Capture[];
   onSuccess?: () => void;
 }
 
-export function CreateTaskDialog({ projects, onSuccess }: CreateTaskDialogProps) {
+export function CreateTaskDialog({ projects, notes = [], captures = [], onSuccess }: CreateTaskDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -18,6 +20,8 @@ export function CreateTaskDialog({ projects, onSuccess }: CreateTaskDialogProps)
   const [priority, setPriority] = useState<TaskPriority | ''>('medium');
   const [dueDate, setDueDate] = useState('');
   const [projectId, setProjectId] = useState<string>('');
+  const [noteId, setNoteId] = useState<string>('');
+  const [sourceCaptureId, setSourceCaptureId] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -34,6 +38,8 @@ export function CreateTaskDialog({ projects, onSuccess }: CreateTaskDialogProps)
         priority: priority ? (priority as TaskPriority) : null,
         due_date: dueDate ? new Date(dueDate).toISOString() : null,
         project_id: projectId || null,
+        note_id: noteId || null,
+        source_capture_id: sourceCaptureId || null,
       });
 
       if (res.success) {
@@ -43,6 +49,8 @@ export function CreateTaskDialog({ projects, onSuccess }: CreateTaskDialogProps)
         setPriority('medium');
         setDueDate('');
         setProjectId('');
+        setNoteId('');
+        setSourceCaptureId('');
         setIsOpen(false);
         if (onSuccess) onSuccess();
       } else {
@@ -153,6 +161,44 @@ export function CreateTaskDialog({ projects, onSuccess }: CreateTaskDialogProps)
                 {projects.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Link Note (Optional)</label>
+              <select
+                value={noteId}
+                onChange={(e) => setNoteId(e.target.value)}
+                disabled={isPending}
+                className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-ring/20"
+              >
+                <option value="">No Note Linked</option>
+                {notes.map((n) => (
+                  <option key={n.id} value={n.id}>
+                    {n.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">
+                Source Capture (Optional)
+              </label>
+              <select
+                value={sourceCaptureId}
+                onChange={(e) => setSourceCaptureId(e.target.value)}
+                disabled={isPending}
+                className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-ring/20"
+              >
+                <option value="">No Capture Linked</option>
+                {captures.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.raw_text.length > 40 ? `${c.raw_text.slice(0, 40)}…` : c.raw_text}
                   </option>
                 ))}
               </select>

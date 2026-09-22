@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 interface TaskItemProps {
   task: Task;
   projectName?: string | null;
+  noteTitle?: string | null;
+  sourceCaptureText?: string | null;
 }
 
 const priorityColors: Record<TaskPriority, string> = {
@@ -16,7 +18,7 @@ const priorityColors: Record<TaskPriority, string> = {
   low: 'bg-slate-500/15 text-slate-600 dark:text-slate-400 border-slate-500/30',
 };
 
-export function TaskItem({ task, projectName }: TaskItemProps) {
+export function TaskItem({ task, projectName, noteTitle, sourceCaptureText }: TaskItemProps) {
   const [isPending, startTransition] = useTransition();
 
   const handleToggleDone = () => {
@@ -76,6 +78,18 @@ export function TaskItem({ task, projectName }: TaskItemProps) {
             {projectName && (
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary border border-primary/20">
                 📁 {projectName}
+              </span>
+            )}
+
+            {noteTitle && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-muted text-muted-foreground border border-border">
+                📝 {noteTitle}
+              </span>
+            )}
+
+            {sourceCaptureText && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-muted text-muted-foreground border border-border">
+                📥 {sourceCaptureText}
               </span>
             )}
           </div>

@@ -12,6 +12,7 @@ export interface CreateTaskPayload {
   due_date?: string | null;
   project_id?: string | null;
   note_id?: string | null;
+  source_capture_id?: string | null;
 }
 
 export async function getTasks(): Promise<Task[]> {
@@ -76,6 +77,7 @@ export async function createTask(
         due_date: payload.due_date || null,
         project_id: payload.project_id || null,
         note_id: payload.note_id || null,
+        source_capture_id: payload.source_capture_id || null,
       })
       .select('*')
       .single();
@@ -160,5 +162,38 @@ export async function deleteTask(
   } catch (err) {
     console.error('Unexpected error in deleteTask:', err);
     return { success: false, error: 'An unexpected error occurred' };
+  }
+}
+
+export async function getTasksByProject(projectId: string): Promise<Task[]> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return [];
+    }
+
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('project_id', projectId)
+      .is('deleted_at', null)
+      .order('due_date', { ascending: true, nullsFirst: false })
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching tasks by project:', error.message || error);
+      return [];
+    }
+
+    return (data as Task[]) || [];
+  } catch (err) {
+    console.error('Unexpected error in getTasksByProject:', err);
+    return [];
   }
 }

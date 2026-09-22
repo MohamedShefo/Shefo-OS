@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Task, Project, TaskStatus, TaskPriority } from '@/types/database';
+import { Capture, Note, Task, Project, TaskStatus, TaskPriority } from '@/types/database';
 import { TaskItem } from './task-item';
 import { Select } from '@/components/ui/select';
 import { EmptyState } from '@/components/common/empty-state';
@@ -9,9 +9,11 @@ import { EmptyState } from '@/components/common/empty-state';
 interface TaskListProps {
   initialTasks: Task[];
   projects: Project[];
+  notes?: Note[];
+  captures?: Capture[];
 }
 
-export function TaskList({ initialTasks, projects }: TaskListProps) {
+export function TaskList({ initialTasks, projects, notes = [], captures = [] }: TaskListProps) {
   const [statusFilter, setStatusFilter] = useState<'all' | TaskStatus>('all');
   const [priorityFilter, setPriorityFilter] = useState<'all' | TaskPriority>('all');
   const [selectedProjectId, setSelectedProjectId] = useState<string>('all');
@@ -19,6 +21,16 @@ export function TaskList({ initialTasks, projects }: TaskListProps) {
   const projectsMap: Record<string, string> = {};
   projects.forEach((p) => {
     projectsMap[p.id] = p.name;
+  });
+
+  const notesMap: Record<string, string> = {};
+  notes.forEach((n) => {
+    notesMap[n.id] = n.title;
+  });
+
+  const capturesMap: Record<string, string> = {};
+  captures.forEach((c) => {
+    capturesMap[c.id] = c.raw_text.length > 40 ? `${c.raw_text.slice(0, 40)}…` : c.raw_text;
   });
 
   const filteredTasks = initialTasks.filter((task) => {
@@ -98,6 +110,8 @@ export function TaskList({ initialTasks, projects }: TaskListProps) {
               key={task.id}
               task={task}
               projectName={task.project_id ? projectsMap[task.project_id] : null}
+              noteTitle={task.note_id ? notesMap[task.note_id] : null}
+              sourceCaptureText={task.source_capture_id ? capturesMap[task.source_capture_id] : null}
             />
           ))}
         </div>

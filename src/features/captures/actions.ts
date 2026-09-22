@@ -4,7 +4,10 @@ import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { Capture } from '@/types/database';
 
-export async function createCapture(rawText: string): Promise<{ success: boolean; error?: string; data?: Capture }> {
+export async function createCapture(
+  rawText: string,
+  projectId?: string | null
+): Promise<{ success: boolean; error?: string; data?: Capture }> {
   try {
     const trimmed = rawText.trim();
     if (!trimmed) {
@@ -27,6 +30,7 @@ export async function createCapture(rawText: string): Promise<{ success: boolean
         user_id: user.id,
         raw_text: trimmed,
         status: 'unprocessed',
+        project_id: projectId || null,
       })
       .select('*')
       .single();
@@ -106,5 +110,37 @@ export async function deleteCapture(id: string): Promise<{ success: boolean; err
   } catch (err) {
     console.error('Unexpected error in deleteCapture:', err);
     return { success: false, error: 'An unexpected error occurred' };
+  }
+}
+
+export async function getCapturesByProject(projectId: string): Promise<Capture[]> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return [];
+    }
+
+    const { data, error } = await supabase
+      .from('captures')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('project_id', projectId)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching captures by project:', error.message || error);
+      return [];
+    }
+
+    return (data as Capture[]) || [];
+  } catch (err) {
+    console.error('Unexpected error in getCapturesByProject:', err);
+    return [];
   }
 }

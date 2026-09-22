@@ -153,3 +153,35 @@ export async function deleteProject(
     return { success: false, error: 'An unexpected error occurred' };
   }
 }
+
+export async function getProjectById(id: string): Promise<Project | null> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return null;
+    }
+
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .is('deleted_at', null)
+      .single();
+
+    if (error) {
+      console.error('Error fetching project:', error.message || error);
+      return null;
+    }
+
+    return (data as Project) || null;
+  } catch (err) {
+    console.error('Unexpected error in getProjectById:', err);
+    return null;
+  }
+}

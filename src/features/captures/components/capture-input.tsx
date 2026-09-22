@@ -2,10 +2,16 @@
 
 import { useState, useTransition, KeyboardEvent } from 'react';
 import { createCapture } from '../actions';
+import { Project } from '@/types/database';
 import { Button } from '@/components/ui/button';
 
-export function CaptureInput() {
+interface CaptureInputProps {
+  projects?: Project[];
+}
+
+export function CaptureInput({ projects = [] }: CaptureInputProps) {
   const [text, setText] = useState('');
+  const [projectId, setProjectId] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -14,10 +20,11 @@ export function CaptureInput() {
     setError(null);
 
     const textToSubmit = text;
+    const projectToSubmit = projectId;
     setText(''); // Instant optimistic clear
 
     startTransition(async () => {
-      const res = await createCapture(textToSubmit);
+      const res = await createCapture(textToSubmit, projectToSubmit || null);
       if (!res.success) {
         setText(textToSubmit); // Restore text on error
         setError(res.error || 'Failed to save capture');
@@ -56,14 +63,32 @@ export function CaptureInput() {
             <span>New line</span>
           </span>
 
-          <Button
-            onClick={handleSubmit}
-            disabled={!text.trim() || isPending}
-            size="sm"
-            className="h-8 px-4 font-medium transition-all"
-          >
-            {isPending ? 'Capturing...' : 'Capture'}
-          </Button>
+          <span className="flex items-center gap-2">
+            {projects.length > 0 && (
+              <select
+                value={projectId}
+                onChange={(e) => setProjectId(e.target.value)}
+                disabled={isPending}
+                className="rounded bg-muted px-2 py-1 text-[11px] font-medium outline-none cursor-pointer border border-border/50 max-w-[140px]"
+              >
+                <option value="">No Project</option>
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    📁 {p.name}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            <Button
+              onClick={handleSubmit}
+              disabled={!text.trim() || isPending}
+              size="sm"
+              className="h-8 px-4 font-medium transition-all"
+            >
+              {isPending ? 'Capturing...' : 'Capture'}
+            </Button>
+          </span>
         </div>
       </div>
 

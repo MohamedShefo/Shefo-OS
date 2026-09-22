@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/server';
 import { getUnprocessedCaptures } from '@/features/captures/actions';
+import { getProjects } from '@/features/projects/actions';
 import { CaptureInput } from '@/features/captures/components/capture-input';
 import { CaptureList } from '@/features/captures/components/capture-list';
 import { Button } from '@/components/ui/button';
@@ -23,7 +24,7 @@ export default async function CapturePage() {
     redirect('/login');
   }
 
-  const captures = await getUnprocessedCaptures();
+  const [captures, projects] = await Promise.all([getUnprocessedCaptures(), getProjects()]);
 
   return (
     <AppShell userEmail={user.email}>
@@ -42,12 +43,12 @@ export default async function CapturePage() {
 
       {/* Input Section */}
       <section>
-        <CaptureInput />
+        <CaptureInput projects={projects} />
       </section>
 
       {/* Unprocessed Inbox List */}
       <section>
-        <CaptureList initialCaptures={captures} />
+        <CaptureList initialCaptures={captures} projects={projects} />
       </section>
     </AppShell>
   );

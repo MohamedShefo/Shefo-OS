@@ -19,6 +19,7 @@
 | **Notes & Concepts** | Complete | Build OK | Rendered inside `AppShell` with `PageHeader`, `Input`, `Select`, `EmptyState`. |
 | **Projects Tracker** | Complete | Build OK | Rendered inside `AppShell` with `PageHeader` & `EmptyState`. |
 | **Tasks Tracker** | Complete | Build OK | Rendered inside `AppShell` with `PageHeader`, `Select`, & `EmptyState`. |
+| **Cross-Module Linking** | Complete (linking slice) | Build OK | Optional nullable FKs only: `captures.project_id`, `tasks.source_capture_id` (new, migration `0001_cross_links.sql` — must be applied to remote); existing `notes.project_id`, `notes.source_capture_id`, `tasks.project_id`, `tasks.note_id` preserved. Project hub at `/projects/[id]` shows linked Captures/Notes/Tasks. |
 | **Trash Lifecycle View** | Complete (Phase 3 slice) | Build OK | `/trash` route in `AppShell` with `PageHeader`, entity filter tabs, `EmptyState`; `getTrashedItems` / `restoreItem` / `permanentlyDeleteItem` Server Actions in `src/features/trash/`; nav entry in `NAV_ITEMS`. No schema change. |
 
 ---

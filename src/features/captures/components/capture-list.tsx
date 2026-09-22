@@ -1,7 +1,7 @@
 'use client';
 
 import { useTransition } from 'react';
-import { Capture } from '@/types/database';
+import { Capture, Project } from '@/types/database';
 import { deleteCapture } from '../actions';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,10 +9,25 @@ import { EmptyState } from '@/components/common/empty-state';
 
 interface CaptureListProps {
   initialCaptures: Capture[];
+  projects?: Project[];
+  heading?: string;
+  emptyTitle?: string;
+  emptyDescription?: string;
 }
 
-export function CaptureList({ initialCaptures }: CaptureListProps) {
+export function CaptureList({
+  initialCaptures,
+  projects = [],
+  heading = 'Unprocessed Inbox',
+  emptyTitle = 'Your inbox is clear.',
+  emptyDescription = 'Use the capture box above to offload thoughts instantly.',
+}: CaptureListProps) {
   const [isPending, startTransition] = useTransition();
+
+  const projectsMap: Record<string, string> = {};
+  projects.forEach((p) => {
+    projectsMap[p.id] = p.name;
+  });
 
   const handleDelete = (id: string) => {
     startTransition(async () => {
@@ -21,19 +36,14 @@ export function CaptureList({ initialCaptures }: CaptureListProps) {
   };
 
   if (initialCaptures.length === 0) {
-    return (
-      <EmptyState
-        title="Your inbox is clear."
-        description="Use the capture box above to offload thoughts instantly."
-      />
-    );
+    return <EmptyState title={emptyTitle} description={emptyDescription} />;
   }
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between px-1">
         <h2 className="text-sm font-semibold tracking-tight text-foreground flex items-center gap-2">
-          Unprocessed Inbox
+          {heading}
           <Badge variant="secondary">{initialCaptures.length}</Badge>
         </h2>
       </div>
@@ -48,8 +58,13 @@ export function CaptureList({ initialCaptures }: CaptureListProps) {
               <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground">
                 {item.raw_text}
               </p>
-              <p className="text-[11px] text-muted-foreground">
-                Captured {new Date(item.created_at).toLocaleString()}
+              <p className="text-[11px] text-muted-foreground flex items-center gap-2 flex-wrap">
+                <span>Captured {new Date(item.created_at).toLocaleString()}</span>
+                {item.project_id && projectsMap[item.project_id] && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary border border-primary/20">
+                    📁 {projectsMap[item.project_id]}
+                  </span>
+                )}
               </p>
             </div>
 

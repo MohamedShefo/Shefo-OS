@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { createClient } from '@/utils/supabase/server';
 import { getTasks } from '@/features/tasks/actions';
 import { getProjects } from '@/features/projects/actions';
+import { getNotes } from '@/features/notes/actions';
+import { getUnprocessedCaptures } from '@/features/captures/actions';
 import { TaskList } from '@/features/tasks/components/task-list';
 import { CreateTaskDialog } from '@/features/tasks/components/create-task-dialog';
 import { Button } from '@/components/ui/button';
@@ -24,7 +26,12 @@ export default async function TasksPage() {
     redirect('/login');
   }
 
-  const [tasks, projects] = await Promise.all([getTasks(), getProjects()]);
+  const [tasks, projects, notes, captures] = await Promise.all([
+    getTasks(),
+    getProjects(),
+    getNotes(),
+    getUnprocessedCaptures(),
+  ]);
 
   return (
     <AppShell userEmail={user.email}>
@@ -39,14 +46,14 @@ export default async function TasksPage() {
                 Home
               </Button>
             </Link>
-            <CreateTaskDialog projects={projects} />
+            <CreateTaskDialog projects={projects} notes={notes} captures={captures} />
           </>
         }
       />
 
       {/* Task List / Filter View */}
       <section>
-        <TaskList initialTasks={tasks} projects={projects} />
+        <TaskList initialTasks={tasks} projects={projects} notes={notes} captures={captures} />
       </section>
     </AppShell>
   );

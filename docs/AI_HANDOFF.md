@@ -189,3 +189,23 @@ in `0000_schema.sql`; no `Goal`/`Learning` interfaces exist (only `EntityType` u
 no field/status/relation spec exists in docs or code. ADR-005 bounds v0 to four entities and
 ADR-014 freezes the schema (no new tables). Building them would require inventing schema,
 RLS policies, and domain semantics — a database/design decision not yet made.
+
+---
+
+## 8. Cross-Module Linking Layer (Implemented)
+
+Optional nullable foreign keys connecting the four existing entities, no generic relations
+table, no many-to-many, no mandatory relations, `ON DELETE SET NULL` throughout.
+
+| Piece | Location |
+| :--- | :--- |
+| Migration (new columns + indexes only) | `supabase/migrations/0001_cross_links.sql` — **must be applied to remote Supabase** |
+| Manual type updates (`Capture.project_id`, `Task.source_capture_id`) | `src/types/database.ts` |
+| Scoped getters (`getCapturesByProject`, `getNotesByProject`, `getTasksByProject`, `getProjectById`) + link-aware create payloads | `src/features/*/actions.ts` (colocated per entity) |
+| Project selector in fast capture; project badge in inbox | `capture-input.tsx`, `capture-list.tsx`, `src/app/capture/page.tsx` |
+| Note + source-capture selectors in task creation; link badges in task rows | `create-task-dialog.tsx`, `task-list.tsx`, `task-item.tsx`, `src/app/tasks/page.tsx` |
+| Project hub (linked Captures / Notes / Tasks, loaded only on visit) | `src/app/projects/[id]/page.tsx`, card title link in `project-card.tsx` |
+
+Verification: `tsc` PASS, `lint` PASS, `build` PASS (`/projects/[id]` listed), affected
+routes (`/capture`, `/tasks`, `/projects`, `/notes`) all 200 with no error markers.
+Dashboard untouched (no new queries, no optimization).

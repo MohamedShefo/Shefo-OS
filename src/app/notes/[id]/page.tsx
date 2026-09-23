@@ -13,6 +13,8 @@ import { getWorkExperiences } from '@/features/work/actions';
 import { getNoteSkills, getSkills } from '@/features/skills/actions';
 import { getTasksByNote } from '@/features/tasks/actions';
 import { getUnprocessedCaptures } from '@/features/captures/actions';
+import { getAttachments } from '@/features/attachments/actions';
+import { AttachmentManager } from '@/features/attachments/components/attachment-manager';
 import { NoteDetail } from '@/features/notes/components/note-detail';
 import { NoteMetaEditor } from '@/features/notes/components/note-meta-editor';
 import { Button } from '@/components/ui/button';
@@ -46,7 +48,7 @@ export default async function NoteDetailPage({ params }: NoteDetailPageProps) {
     notFound();
   }
 
-  const [blocks, outgoing, incoming, allNotes, linkedSkills, allSkills, linkedTasks, projects, works, captures] =
+  const [blocks, outgoing, incoming, allNotes, linkedSkills, allSkills, linkedTasks, projects, works, captures, attachments] =
     await Promise.all([
       getNoteBlocks(id),
       getOutgoingNoteLinks(id),
@@ -58,6 +60,7 @@ export default async function NoteDetailPage({ params }: NoteDetailPageProps) {
       getProjects(),
       getWorkExperiences(),
       getUnprocessedCaptures(),
+      getAttachments('note', id),
     ]);
 
   const projectsMap: Record<string, string> = {};
@@ -100,6 +103,10 @@ export default async function NoteDetailPage({ params }: NoteDetailPageProps) {
         projectsMap={projectsMap}
         worksMap={worksMap}
       />
+
+      <section>
+        <AttachmentManager entityType="note" entityId={id} initialAttachments={attachments} />
+      </section>
 
       <section>
         <NoteDetail

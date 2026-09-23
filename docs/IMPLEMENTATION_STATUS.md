@@ -55,7 +55,14 @@
 | **Monthly Analysis** | Complete (Phase 6) | Build OK | Server-side month aggregation (income/expenses/net/categories) + prev-month comparison. |
 | **Export Compat** | Complete (Phase 6) | Build OK | Bundle + panel extended with goals and finance CSVs; JSON auto-includes. |
 | **Unified Search Page** | Complete (Phase 7) | Build OK | `/search?q=` server-rendered grouped results reusing `globalSearch` + shared primitives. Palette remains the instant entry. |
-| **Notifications** | Complete (Phase 7 foundation) | Build OK | `notifications` table (RLS verified); list/unread-count/read/mark-all + self-only create helper; shell bell with badge + panel (desktop + mobile). No push/email/automation. |
+| **Notifications** | Complete (Phase 7 foundation) | Build OK | `notifications` table (RLS verified); list/unread-count/read/mark-all + self-only create helper; shell bell with badge + panel (desktop + mobile). Lazy task-reminder materialization with DB-enforced dedupe (`ref_key`). No push/email/automation. |
+| **Calendar** | Complete (Phase 7) | Build OK | `calendar_events` (RLS verified) + `/calendar` month grid/agenda, create/edit/delete with all-day + validation. Internal only. |
+| **Files / Attachments** | Complete (Phase 7) | Build OK | Private `attachments` bucket (owner-folder policies verified) + metadata rows; reusable manager on project/note detail; 5MB, executable blocklist, signed-URL downloads. No OCR/AI. |
+| **Import / Export** | Complete (Phase 7) | Build OK | Existing export + bounded tasks-CSV import (client parse/preview, server-validated, max 500 rows). No ETL framework. |
+| **Daily Summary** | Complete (Phase 7) | Build OK | `/today`: overdue/due/reminders, upcoming events, notifications, inbox/notes, journal status. Deterministic, no AI. |
+| **Rich Linking** | Complete (Phase 7) | Build OK | Project badges link to hubs (captures, tasks); note source-capture links to inbox. FK-based only. |
+| **Goals Tracking** | Pre-existing (Phase 6) | Build OK | Goals system already covers title/description/status/progress/targets/milestones + relations. No new work needed. |
+| **PWA Readiness** | Complete (Phase 7 foundation) | Build OK | `icon.svg` + `manifest.ts` (standalone, theme colors). No service worker/offline sync (deferred). |
 | **Extension Recipe** | Complete (Phase 7) | Docs | `src/extensions/README.md` codifies the module pattern (migration → types → actions → UI → shell). No runtime abstraction. |
 
 ---

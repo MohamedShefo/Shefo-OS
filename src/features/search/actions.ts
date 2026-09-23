@@ -10,7 +10,8 @@ export type SearchResultEntity =
   | 'journal'
   | 'habit'
   | 'goal'
-  | 'finance';
+  | 'finance'
+  | 'event';
 
 export interface SearchResult {
   entityType: SearchResultEntity;
@@ -53,7 +54,7 @@ export async function globalSearch(query: string): Promise<SearchResult[]> {
     // query containing those characters degrades to a simpler match, not an error.
     const orPattern = `%${q.replace(/[%_\\]/g, '\\$&').replace(/[,()]/g, '')}%`;
 
-    const [captures, notes, projects, tasks, work, skills, journal, habits, goals, finance] = await Promise.all([
+    const [captures, notes, projects, tasks, work, skills, journal, habits, goals, finance, events] = await Promise.all([
       supabase
         .from('captures')
         .select('id, raw_text, updated_at')
@@ -132,6 +133,14 @@ export async function globalSearch(query: string): Promise<SearchResult[]> {
         .eq('user_id', user.id)
         .is('deleted_at', null)
         .or(`description.ilike.${orPattern},category.ilike.${orPattern}`)
+        .order('updated_at', { ascending: false })
+        .limit(4),
+      supabase
+        .from('calendar_events')
+        .select('id, title, description, updated_at')
+        .eq('user_id', user.id)
+        .is('deleted_at', null)
+        .or(`title.ilike.${orPattern},description.ilike.${orPattern}`)
         .order('updated_at', { ascending: false })
         .limit(4),
     ]);
@@ -236,6 +245,16 @@ export async function globalSearch(query: string): Promise<SearchResult[]> {
         snippet: null,
         href: '/finance',
         updatedAt: f.updated_at,
+      });
+    }
+    for (const e of events.data ?? []) {
+      results.push({
+        entityType: 'event',
+        id: e.id,
+        title: e.title,
+        snippet: snippetOf(e.description),
+        href: '/calendar',
+        updatedAt: e.updated_at,
       });
     }
 

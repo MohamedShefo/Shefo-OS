@@ -5,6 +5,8 @@ import { getProjectById } from '@/features/projects/actions';
 import { getCapturesByProject } from '@/features/captures/actions';
 import { getNotesByProject } from '@/features/notes/actions';
 import { getTasksByProject } from '@/features/tasks/actions';
+import { getAttachments } from '@/features/attachments/actions';
+import { AttachmentManager } from '@/features/attachments/components/attachment-manager';
 import { CaptureList } from '@/features/captures/components/capture-list';
 import { NoteList } from '@/features/notes/components/note-list';
 import { TaskList } from '@/features/tasks/components/task-list';
@@ -40,10 +42,11 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
     notFound();
   }
 
-  const [captures, notes, tasks] = await Promise.all([
+  const [captures, notes, tasks, attachments] = await Promise.all([
     getCapturesByProject(id),
     getNotesByProject(id),
     getTasksByProject(id),
+    getAttachments('project', id),
   ]);
 
   return (
@@ -97,6 +100,11 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
           </h2>
         </div>
         <TaskList initialTasks={tasks} projects={[project]} notes={notes} captures={captures} />
+      </section>
+
+      {/* Attachments */}
+      <section>
+        <AttachmentManager entityType="project" entityId={id} initialAttachments={attachments} />
       </section>
     </AppShell>
   );

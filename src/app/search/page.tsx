@@ -29,6 +29,7 @@ const ENTITY_ICON: Record<SearchResult['entityType'], string> = {
   habit: '🔁',
   goal: '🎯',
   finance: '💰',
+  event: '📅',
 };
 
 const ENTITY_LABEL: Record<SearchResult['entityType'], string> = {
@@ -42,6 +43,7 @@ const ENTITY_LABEL: Record<SearchResult['entityType'], string> = {
   habit: 'Habit',
   goal: 'Goal',
   finance: 'Finance',
+  event: 'Event',
 };
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {

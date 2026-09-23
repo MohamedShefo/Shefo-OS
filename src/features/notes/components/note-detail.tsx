@@ -204,7 +204,10 @@ export function NoteDetail(props: NoteDetailProps) {
 
       {props.sourceCaptureText && (
         <p className="text-[11px] text-muted-foreground px-1">
-          📥 Created from capture: “{props.sourceCaptureText}”
+          📥 Created from capture:{' '}
+          <Link href="/capture" className="text-primary hover:underline">
+            “{props.sourceCaptureText}”
+          </Link>
         </p>
       )}
 

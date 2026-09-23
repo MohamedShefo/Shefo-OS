@@ -15,6 +15,12 @@ export const NAV_ITEMS: NavItem[] = [
     icon: '⚡',
   },
   {
+    id: 'today',
+    label: 'Today',
+    href: '/today',
+    icon: '🌅',
+  },
+  {
     id: 'capture',
     label: 'Quick Capture',
     href: '/capture',
@@ -55,6 +61,12 @@ export const NAV_ITEMS: NavItem[] = [
     label: 'Reports',
     href: '/reports',
     icon: '📊',
+  },
+  {
+    id: 'calendar',
+    label: 'Calendar',
+    href: '/calendar',
+    icon: '📅',
   },
   {
     id: 'workspaces',

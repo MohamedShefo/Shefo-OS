@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import Link from 'next/link';
 import { Capture, Project } from '@/types/database';
 import { deleteCapture } from '../actions';
 import { Button } from '@/components/ui/button';
@@ -72,9 +73,12 @@ export function CaptureList({
               <p className="text-[11px] text-muted-foreground flex items-center gap-2 flex-wrap">
                 <span>Captured {new Date(item.created_at).toLocaleString()}</span>
                 {item.project_id && projectsMap[item.project_id] && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary border border-primary/20">
+                  <Link
+                    href={`/projects/${item.project_id}`}
+                    className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary border border-primary/20 hover:underline"
+                  >
                     📁 {projectsMap[item.project_id]}
-                  </span>
+                  </Link>
                 )}
               </p>
             </div>

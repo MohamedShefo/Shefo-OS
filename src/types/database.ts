@@ -59,6 +59,7 @@ export interface Task {
   note_id: string | null;
   source_capture_id: string | null;
   goal_id: string | null;
+  reminder_at: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -285,8 +286,36 @@ export interface Notification {
   title: string;
   body: string | null;
   link_href: string | null;
+  ref_key: string | null;
   read_at: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+}
+
+export interface CalendarEvent {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string | null;
+  starts_at: string;
+  ends_at: string | null;
+  is_all_day: boolean;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export type AttachmentEntity = 'project' | 'note' | 'task' | 'capture';
+
+export interface Attachment {
+  id: string;
+  user_id: string;
+  entity_type: string;
+  entity_id: string;
+  file_path: string;
+  file_name: string;
+  mime_type: string | null;
+  size_bytes: number;
+  created_at: string;
 }

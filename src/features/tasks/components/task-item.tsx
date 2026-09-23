@@ -1,6 +1,7 @@
 'use client';
 
 import { useTransition } from 'react';
+import Link from 'next/link';
 import { Task, TaskPriority, TaskStatus } from '@/types/database';
 import { updateTaskStatus, deleteTask } from '../actions';
 import { Button } from '@/components/ui/button';
@@ -75,10 +76,13 @@ export function TaskItem({ task, projectName, noteTitle, sourceCaptureText }: Ta
               </span>
             )}
 
-            {projectName && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary border border-primary/20">
+            {projectName && task.project_id && (
+              <Link
+                href={`/projects/${task.project_id}`}
+                className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary border border-primary/20 hover:underline"
+              >
                 📁 {projectName}
-              </span>
+              </Link>
             )}
 
             {noteTitle && (
@@ -103,6 +107,12 @@ export function TaskItem({ task, projectName, noteTitle, sourceCaptureText }: Ta
           {task.due_date && (
             <p className="text-[11px] text-muted-foreground flex items-center gap-1">
               📅 Due {new Date(task.due_date).toLocaleDateString()}
+            </p>
+          )}
+
+          {task.reminder_at && (
+            <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+              ⏰ Reminds {new Date(task.reminder_at).toLocaleString()}
             </p>
           )}
         </div>

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { ensureDevice } from '@/features/devices/actions';
 import { recordActivity } from '@/features/activity/actions';
+import { checkReminders } from '@/features/notifications/reminders';
 import { getLocationMode } from '@/features/activity/components/location-consent';
 import { formatApprox, formatCoords } from '@/features/activity/geocode';
 
@@ -24,6 +25,8 @@ export function ShellTrackers({ workspaceId }: { workspaceId: string | null }) {
     if (ran.current) return;
     ran.current = true;
     void ensureDevice();
+    // Lazy reminder materialization (no cron): once per shell load.
+    void checkReminders();
     if (!workspaceId) return;
     const mode = getLocationMode();
     const deviceLabel = coarseDeviceLabel();

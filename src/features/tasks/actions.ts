@@ -13,6 +13,7 @@ export interface CreateTaskPayload {
   project_id?: string | null;
   note_id?: string | null;
   source_capture_id?: string | null;
+  reminder_at?: string | null;
 }
 
 export async function getTasks(): Promise<Task[]> {
@@ -78,6 +79,7 @@ export async function createTask(
         project_id: payload.project_id || null,
         note_id: payload.note_id || null,
         source_capture_id: payload.source_capture_id || null,
+        reminder_at: payload.reminder_at || null,
       })
       .select('*')
       .single();
@@ -161,6 +163,84 @@ export async function deleteTask(
     return { success: true };
   } catch (err) {
     console.error('Unexpected error in deleteTask:', err);
+    return { success: false, error: 'An unexpected error occurred' };
+  }
+}
+
+export interface TaskImportRow {
+  title?: string;
+  description?: string;
+  status?: string;
+  priority?: string;
+  due_date?: string;
+}
+
+const IMPORT_STATUSES = new Set(['todo', 'in_progress', 'done']);
+const IMPORT_PRIORITIES = new Set(['low', 'medium', 'high']);
+
+/**
+ * Bounded CSV-row import (tasks only). Every row is validated; invalid rows
+ * are skipped and counted. Inserts are always owned by the caller.
+ */
+export async function importTasks(
+  rows: TaskImportRow[]
+): Promise<{ success: boolean; error?: string; imported?: number; skipped?: number }> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) return { success: false, error: 'User is not authenticated' };
+    const ctx = { supabase, user };
+    const sliced = rows.slice(0, 500);
+    const valid: Array<{
+      user_id: string;
+      title: string;
+      description: string | null;
+      status: TaskStatus;
+      priority: TaskPriority | null;
+      due_date: string | null;
+    }> = [];
+    let skipped = 0;
+    for (const row of sliced) {
+      const title = (row.title ?? '').trim();
+      if (!title) {
+        skipped += 1;
+        continue;
+      }
+      const status = (row.status ?? 'todo').trim().toLowerCase().replace(/[\s-]+/g, '_');
+      const priorityRaw = (row.priority ?? '').trim().toLowerCase();
+      let due: string | null = null;
+      if ((row.due_date ?? '').trim()) {
+        const parsed = new Date(row.due_date!.trim());
+        if (Number.isNaN(parsed.getTime())) {
+          skipped += 1;
+          continue;
+        }
+        due = parsed.toISOString();
+      }
+      valid.push({
+        user_id: ctx.user.id,
+        title,
+        description: (row.description ?? '').trim() || null,
+        status: (IMPORT_STATUSES.has(status) ? status : 'todo') as TaskStatus,
+        priority: (IMPORT_PRIORITIES.has(priorityRaw) ? priorityRaw : null) as TaskPriority | null,
+        due_date: due,
+      });
+    }
+    if (valid.length > 0) {
+      const { error } = await ctx.supabase.from('tasks').insert(valid);
+      if (error) {
+        console.error('Error importing tasks:', error);
+        return { success: false, error: error.message };
+      }
+    }
+    revalidatePath('/tasks');
+    revalidatePath('/');
+    return { success: true, imported: valid.length, skipped };
+  } catch (err) {
+    console.error('Unexpected error in importTasks:', err);
     return { success: false, error: 'An unexpected error occurred' };
   }
 }

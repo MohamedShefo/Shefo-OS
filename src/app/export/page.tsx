@@ -2,13 +2,14 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/server';
 import { ExportPanel } from '@/features/export/components/export-panel';
+import { ImportTasks } from '@/features/tasks/components/import-tasks';
 import { Button } from '@/components/ui/button';
 import { AppShell } from '@/components/shell/app-shell';
 import { PageHeader } from '@/components/common/page-header';
 
 export const metadata = {
   title: 'Export',
-  description: 'Download your data in standard formats.',
+  description: 'Download your data in standard formats, or import tasks.',
 };
 
 export default async function ExportPage() {
@@ -37,6 +38,10 @@ export default async function ExportPage() {
 
       <section>
         <ExportPanel />
+      </section>
+
+      <section>
+        <ImportTasks />
       </section>
     </AppShell>
   );

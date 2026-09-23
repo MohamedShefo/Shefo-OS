@@ -19,6 +19,7 @@ export function CreateTaskDialog({ projects, notes = [], captures = [], onSucces
   const [status, setStatus] = useState<TaskStatus>('todo');
   const [priority, setPriority] = useState<TaskPriority | ''>('medium');
   const [dueDate, setDueDate] = useState('');
+  const [reminderAt, setReminderAt] = useState('');
   const [projectId, setProjectId] = useState<string>('');
   const [noteId, setNoteId] = useState<string>('');
   const [sourceCaptureId, setSourceCaptureId] = useState<string>('');
@@ -40,6 +41,7 @@ export function CreateTaskDialog({ projects, notes = [], captures = [], onSucces
         project_id: projectId || null,
         note_id: noteId || null,
         source_capture_id: sourceCaptureId || null,
+        reminder_at: reminderAt ? new Date(reminderAt).toISOString() : null,
       });
 
       if (res.success) {
@@ -48,6 +50,7 @@ export function CreateTaskDialog({ projects, notes = [], captures = [], onSucces
         setStatus('todo');
         setPriority('medium');
         setDueDate('');
+        setReminderAt('');
         setProjectId('');
         setNoteId('');
         setSourceCaptureId('');
@@ -164,6 +167,17 @@ export function CreateTaskDialog({ projects, notes = [], captures = [], onSucces
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Reminder (Optional)</label>
+              <input
+                type="datetime-local"
+                value={reminderAt}
+                onChange={(e) => setReminderAt(e.target.value)}
+                disabled={isPending}
+                className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-ring/20"
+              />
             </div>
           </div>
 

@@ -326,6 +326,34 @@ error markers. Authenticated testing still blocked by the documented Auth issue.
 
 ---
 
+## 15. Phase 7 — Completion (CLOSED)
+
+Remaining extensions implemented in the existing architecture, no redesign:
+- **Calendar:** `calendar_events` + `/calendar` (month grid, agenda, validated
+  create/edit/delete, all-day). Internal only, no sync.
+- **Task reminders:** `tasks.reminder_at` + lazy shell-load materialization into
+  the notifications foundation; DB-enforced dedupe (`ref_key` partial unique
+  index); no cron/automation.
+- **Files:** private `attachments` bucket + metadata rows + reusable manager on
+  project/note detail pages; 5 MB, executable blocklist, signed downloads.
+- **Import/export:** existing export + new bounded tasks-CSV import (parsed +
+  previewed client-side, validated + user-scoped server-side).
+- **Daily summary:** `/today` (overdue/due/reminders, events, notifications,
+  inbox, journal) — deterministic, no AI.
+- **Rich linking:** badge→hub links (captures, tasks), capture→inbox link.
+- **Goals:** already satisfied by Phase 6 — no new work.
+- **PWA:** `icon.svg` + `manifest.ts`; no service worker/offline (deferred).
+
+Migrations `0010_calendar_files_reminders.sql` + `0011_notification_refkey.sql`
+applied; history synced through `0011`; RLS verified on all new tables and the
+attachments storage path.
+
+**Verification:** `tsc` PASS, `lint` PASS (0/0), `build` PASS (29/29),
+10/10 routes HTTP 200 with gates intact and no error markers. Authenticated
+interactive testing still blocked by the documented Auth login-500.
+
+---
+
 ## 13. Phase 6 Correction Pass — CLOSED
 
 - **Theme script:** raw `<script dangerouslySetInnerHTML>` in root layout replaced

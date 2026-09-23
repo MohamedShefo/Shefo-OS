@@ -27,6 +27,7 @@ interface NoteDetailProps {
   projectsMap: Record<string, string>;
   worksMap: Record<string, string>;
   sourceCaptureText: string | null;
+  sourceCaptureId: string | null;
 }
 
 type ViewMode = 'read' | 'edit' | 'split';
@@ -101,6 +102,16 @@ export function NoteDetail(props: NoteDetailProps) {
             label: props.worksMap[note.work_experience_id],
             kind: 'work' as const,
             href: `/work/${note.work_experience_id}`,
+          },
+        ]
+      : []),
+    ...(props.sourceCaptureId
+      ? [
+          {
+            key: `capture-${props.sourceCaptureId}`,
+            label: props.sourceCaptureText ?? 'Source capture',
+            kind: 'capture' as const,
+            href: '/capture',
           },
         ]
       : []),

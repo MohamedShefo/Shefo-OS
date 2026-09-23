@@ -131,6 +131,7 @@ export default async function NoteDetailPage({ params }: NoteDetailPageProps) {
                 : sourceCapture.raw_text
               : null
           }
+          sourceCaptureId={sourceCapture?.id ?? null}
         />
       </section>
     </AppShell>

@@ -59,6 +59,41 @@ export async function checkReminders(): Promise<number> {
       // Unique-violation races resolve to "already exists" — not an error.
       if (!insertError) created += 1;
     }
+
+    // Upcoming calendar events (next 24h, one notice per event start).
+    const soon = new Date(Date.now() + 24 * 3600000).toISOString();
+    const { data: events } = await supabase
+      .from('calendar_events')
+      .select('id, title, starts_at')
+      .eq('user_id', user.id)
+      .is('deleted_at', null)
+      .gt('starts_at', now)
+      .lte('starts_at', soon)
+      .limit(10);
+    for (const event of (events as Array<{ id: string; title: string; starts_at: string }>) ||
+      []) {
+      const refKey = `event:${event.id}@${event.starts_at}`;
+      const { data: existing } = await supabase
+        .from('notifications')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('type', 'event_reminder')
+        .eq('ref_key', refKey)
+        .is('read_at', null)
+        .is('deleted_at', null)
+        .limit(1);
+      if (existing && existing.length > 0) continue;
+
+      const { error: insertError } = await supabase.from('notifications').insert({
+        user_id: user.id,
+        type: 'event_reminder',
+        title: `Upcoming: ${event.title}`,
+        body: `Starts ${new Date(event.starts_at).toLocaleString()}`,
+        link_href: '/calendar',
+        ref_key: refKey,
+      });
+      if (!insertError) created += 1;
+    }
     return created;
   } catch (err) {
     console.error('Unexpected error in checkReminders:', err);

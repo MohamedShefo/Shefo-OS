@@ -91,6 +91,22 @@ export async function markAllNotificationsRead(): Promise<{ success: boolean }> 
   }
 }
 
+export async function deleteNotification(id: string): Promise<{ success: boolean }> {
+  try {
+    const ctx = await authedUser();
+    if (!ctx) return { success: false };
+    await ctx.supabase
+      .from('notifications')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('user_id', ctx.user.id);
+    return { success: true };
+  } catch (err) {
+    console.error('Unexpected error in deleteNotification:', err);
+    return { success: false };
+  }
+}
+
 /**
  * Explicit creation helper for future server-side producers
  * (reminders, shares, system notices). No automation calls this yet.

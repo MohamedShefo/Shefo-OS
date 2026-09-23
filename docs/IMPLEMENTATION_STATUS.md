@@ -55,7 +55,7 @@
 | **Monthly Analysis** | Complete (Phase 6) | Build OK | Server-side month aggregation (income/expenses/net/categories) + prev-month comparison. |
 | **Export Compat** | Complete (Phase 6) | Build OK | Bundle + panel extended with goals and finance CSVs; JSON auto-includes. |
 | **Unified Search Page** | Complete (Phase 7) | Build OK | `/search?q=` server-rendered grouped results reusing `globalSearch` + shared primitives. Palette remains the instant entry. |
-| **Notifications** | Complete (Phase 7 foundation) | Build OK | `notifications` table (RLS verified); list/unread-count/read/mark-all + self-only create helper; shell bell with badge + panel (desktop + mobile). Lazy task-reminder materialization with DB-enforced dedupe (`ref_key`). No push/email/automation. |
+| **Notifications** | Complete (Phase 7 foundation) | Build OK | `notifications` table (RLS verified); list/unread-count/read/mark-all/delete + self-only create helper; shell bell with badge + panel + per-item dismiss (desktop + mobile). Lazy task + upcoming-event reminders with DB-enforced dedupe (`ref_key`). No push/email/automation. |
 | **Calendar** | Complete (Phase 7) | Build OK | `calendar_events` (RLS verified) + `/calendar` month grid/agenda, create/edit/delete with all-day + validation. Internal only. |
 | **Files / Attachments** | Complete (Phase 7) | Build OK | Private `attachments` bucket (owner-folder policies verified) + metadata rows; reusable manager on project/note detail; 5MB, executable blocklist, signed-URL downloads. No OCR/AI. |
 | **Import / Export** | Complete (Phase 7) | Build OK | Existing export + bounded tasks-CSV import (client parse/preview, server-validated, max 500 rows). No ETL framework. |

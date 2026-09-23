@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import {
+  deleteNotification,
   getRecentNotifications,
   markAllNotificationsRead,
   markNotificationRead,
@@ -55,6 +56,14 @@ export function NotificationBell({ initialUnread }: { initialUnread: number }) {
     });
   };
 
+  const remove = (id: string, wasUnread: boolean) => {
+    startTransition(async () => {
+      await deleteNotification(id);
+      setItems((prev) => (prev === null ? prev : prev.filter((n) => n.id !== id)));
+      if (wasUnread) setUnread((u) => Math.max(0, u - 1));
+    });
+  };
+
   return (
     <div className="relative">
       <button
@@ -99,8 +108,20 @@ export function NotificationBell({ initialUnread }: { initialUnread: number }) {
             ) : (
               <div className="max-h-72 space-y-1.5 overflow-y-auto">
                 {items.map((n) => {
+                  const dismiss = (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        remove(n.id, !n.read_at);
+                      }}
+                      aria-label={`Dismiss ${n.title}`}
+                      className="shrink-0 rounded px-1 text-[11px] text-muted-foreground hover:text-destructive"
+                    >
+                      ✕
+                    </button>
+                  );
                   const body = (
-                    <span className="block min-w-0">
+                    <span className="block min-w-0 flex-1">
                       <span className={`block truncate text-xs font-medium ${n.read_at ? 'text-muted-foreground' : 'text-foreground'}`}>
                         {!n.read_at && <span aria-hidden="true" className="me-1.5 inline-block h-1.5 w-1.5 rounded-full bg-primary" />}
                         {n.title}
@@ -114,25 +135,35 @@ export function NotificationBell({ initialUnread }: { initialUnread: number }) {
                     </span>
                   );
                   return n.link_href ? (
-                    <Link
+                    <div
                       key={n.id}
-                      href={n.link_href}
-                      onClick={() => {
-                        openItem(n.id);
-                        setOpen(false);
-                      }}
-                      className="block rounded-lg border border-border/60 px-2.5 py-2 transition-colors hover:bg-muted/40"
+                      className="flex items-start gap-1 rounded-lg border border-border/60 px-2.5 py-2 transition-colors hover:bg-muted/40"
                     >
-                      {body}
-                    </Link>
+                      <Link
+                        href={n.link_href}
+                        onClick={() => {
+                          openItem(n.id);
+                          setOpen(false);
+                        }}
+                        className="block min-w-0 flex-1"
+                      >
+                        {body}
+                      </Link>
+                      {dismiss}
+                    </div>
                   ) : (
-                    <button
+                    <div
                       key={n.id}
-                      onClick={() => openItem(n.id)}
-                      className="block w-full rounded-lg border border-border/60 px-2.5 py-2 text-start transition-colors hover:bg-muted/40"
+                      className="flex items-start gap-1 rounded-lg border border-border/60 px-2.5 py-2 transition-colors hover:bg-muted/40"
                     >
-                      {body}
-                    </button>
+                      <button
+                        onClick={() => openItem(n.id)}
+                        className="block min-w-0 flex-1 text-start"
+                      >
+                        {body}
+                      </button>
+                      {dismiss}
+                    </div>
                   );
                 })}
               </div>

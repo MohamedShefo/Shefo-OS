@@ -175,3 +175,57 @@ export async function deleteEvent(id: string): Promise<{ success: boolean; error
     return { success: false, error: 'An unexpected error occurred' };
   }
 }
+
+/**
+ * Schedule a task on the calendar (Task → Calendar integration).
+ * Uses the task's due date as the event start (+1h default end).
+ * Requires an owned, non-deleted task with a due date.
+ */
+export async function createEventFromTask(
+  taskId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) return { success: false, error: 'User is not authenticated' };
+    const { data: task, error: fetchError } = await supabase
+      .from('tasks')
+      .select('id, title, description, due_date')
+      .eq('id', taskId)
+      .eq('user_id', user.id)
+      .is('deleted_at', null)
+      .single();
+    if (fetchError || !task) {
+      return { success: false, error: 'Task not found' };
+    }
+    const row = task as { title: string; description: string | null; due_date: string | null };
+    if (!row.due_date) {
+      return { success: false, error: 'Set a due date first' };
+    }
+    const start = new Date(row.due_date);
+    if (Number.isNaN(start.getTime())) {
+      return { success: false, error: 'Task due date is invalid' };
+    }
+    const { error } = await supabase.from('calendar_events').insert({
+      user_id: user.id,
+      title: row.title,
+      description: row.description,
+      starts_at: start.toISOString(),
+      ends_at: new Date(start.getTime() + 3600000).toISOString(),
+      is_all_day: false,
+    });
+    if (error) {
+      console.error('Error scheduling task event:', error);
+      return { success: false, error: error.message };
+    }
+    revalidatePath('/calendar');
+    revalidatePath('/today');
+    return { success: true };
+  } catch (err) {
+    console.error('Unexpected error in createEventFromTask:', err);
+    return { success: false, error: 'An unexpected error occurred' };
+  }
+}

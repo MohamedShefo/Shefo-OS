@@ -14,6 +14,7 @@ export interface CreateTaskPayload {
   note_id?: string | null;
   source_capture_id?: string | null;
   reminder_at?: string | null;
+  recurrence?: string | null;
 }
 
 export async function getTasks(): Promise<Task[]> {
@@ -80,6 +81,7 @@ export async function createTask(
         note_id: payload.note_id || null,
         source_capture_id: payload.source_capture_id || null,
         reminder_at: payload.reminder_at || null,
+        recurrence: payload.recurrence || null,
       })
       .select('*')
       .single();
@@ -163,6 +165,98 @@ export async function deleteTask(
     return { success: true };
   } catch (err) {
     console.error('Unexpected error in deleteTask:', err);
+    return { success: false, error: 'An unexpected error occurred' };
+  }
+}
+
+const RECURRENCE_DAYS: Record<string, number> = {
+  daily: 1,
+  weekly: 7,
+  monthly: 30,
+};
+
+function advanceDate(iso: string | null, days: number): string | null {
+  const base = iso ? new Date(iso).getTime() : Date.now();
+  if (Number.isNaN(base)) return null;
+  return new Date(base + days * 86400000).toISOString();
+}
+
+/**
+ * Complete a task occurrence. For recurring tasks this marks the current
+ * occurrence done AND spawns the next open occurrence (same fields, dates
+ * advanced) — but only when no live child occurrence exists, so toggling or
+ * retries can never duplicate the series or corrupt the rule.
+ */
+export async function completeTaskOccurrence(
+  id: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) return { success: false, error: 'User is not authenticated' };
+
+    const { data: task, error: fetchError } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .is('deleted_at', null)
+      .single();
+    if (fetchError || !task) {
+      return { success: false, error: 'Task not found' };
+    }
+    const current = task as Task;
+
+    const { error: doneError } = await supabase
+      .from('tasks')
+      .update({ status: 'done' })
+      .eq('id', id)
+      .eq('user_id', user.id);
+    if (doneError) {
+      console.error('Error completing task:', doneError);
+      return { success: false, error: doneError.message };
+    }
+
+    const intervalDays = current.recurrence ? RECURRENCE_DAYS[current.recurrence] : undefined;
+    if (intervalDays) {
+      const { data: children } = await supabase
+        .from('tasks')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('parent_task_id', id)
+        .is('deleted_at', null)
+        .limit(1);
+      if (!children || children.length === 0) {
+        const { error: spawnError } = await supabase.from('tasks').insert({
+          user_id: user.id,
+          title: current.title,
+          description: current.description,
+          status: 'todo',
+          priority: current.priority,
+          due_date: advanceDate(current.due_date, intervalDays),
+          project_id: current.project_id,
+          note_id: current.note_id,
+          source_capture_id: current.source_capture_id,
+          goal_id: current.goal_id,
+          reminder_at: current.reminder_at ? advanceDate(current.reminder_at, intervalDays) : null,
+          recurrence: current.recurrence,
+          parent_task_id: id,
+        });
+        if (spawnError) {
+          console.error('Error spawning next occurrence:', spawnError);
+        }
+      }
+    }
+
+    revalidatePath('/tasks');
+    revalidatePath('/today');
+    revalidatePath('/');
+    return { success: true };
+  } catch (err) {
+    console.error('Unexpected error in completeTaskOccurrence:', err);
     return { success: false, error: 'An unexpected error occurred' };
   }
 }

@@ -20,6 +20,7 @@ export function CreateTaskDialog({ projects, notes = [], captures = [], onSucces
   const [priority, setPriority] = useState<TaskPriority | ''>('medium');
   const [dueDate, setDueDate] = useState('');
   const [reminderAt, setReminderAt] = useState('');
+  const [recurrence, setRecurrence] = useState('');
   const [projectId, setProjectId] = useState<string>('');
   const [noteId, setNoteId] = useState<string>('');
   const [sourceCaptureId, setSourceCaptureId] = useState<string>('');
@@ -42,6 +43,7 @@ export function CreateTaskDialog({ projects, notes = [], captures = [], onSucces
         note_id: noteId || null,
         source_capture_id: sourceCaptureId || null,
         reminder_at: reminderAt ? new Date(reminderAt).toISOString() : null,
+        recurrence: recurrence || null,
       });
 
       if (res.success) {
@@ -51,6 +53,7 @@ export function CreateTaskDialog({ projects, notes = [], captures = [], onSucces
         setPriority('medium');
         setDueDate('');
         setReminderAt('');
+        setRecurrence('');
         setProjectId('');
         setNoteId('');
         setSourceCaptureId('');
@@ -178,6 +181,21 @@ export function CreateTaskDialog({ projects, notes = [], captures = [], onSucces
                 disabled={isPending}
                 className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-ring/20"
               />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Repeats</label>
+              <select
+                value={recurrence}
+                onChange={(e) => setRecurrence(e.target.value)}
+                disabled={isPending}
+                className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-ring/20"
+              >
+                <option value="">Does not repeat</option>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
             </div>
           </div>
 

@@ -61,6 +61,8 @@ export interface Task {
   source_capture_id: string | null;
   goal_id: string | null;
   reminder_at: string | null;
+  recurrence: string | null;
+  parent_task_id: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;

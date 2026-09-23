@@ -69,7 +69,10 @@ export default async function TodayPage() {
           <h2 className="text-sm font-semibold tracking-tight text-foreground">Needs attention</h2>
           {overdue.map((t) => (
             <p key={t.id} className="text-xs text-foreground">
-              🔴 Overdue: <span className="font-medium">{t.title}</span>{' '}
+              🔴 Overdue:{' '}
+              <Link href="/tasks" className="font-medium hover:underline">
+                {t.title}
+              </Link>{' '}
               <span className="text-muted-foreground">
                 (due {t.due_date ? new Date(t.due_date).toLocaleDateString() : '—'})
               </span>
@@ -77,11 +80,35 @@ export default async function TodayPage() {
           ))}
           {remindersDue.map((t) => (
             <p key={t.id} className="text-xs text-foreground">
-              ⏰ Reminder: <span className="font-medium">{t.title}</span>
+              ⏰ Reminder:{' '}
+              <Link href="/tasks" className="font-medium hover:underline">
+                {t.title}
+              </Link>
             </p>
           ))}
         </section>
       )}
+
+      <section className="flex flex-wrap items-center gap-2">
+        <Link href="/tasks">
+          <Button size="sm">+ New Task</Button>
+        </Link>
+        <Link href="/capture">
+          <Button size="sm" variant="secondary">
+            ⚡ Capture
+          </Button>
+        </Link>
+        <Link href="/calendar">
+          <Button size="sm" variant="outline">
+            📅 Calendar
+          </Button>
+        </Link>
+        <Link href="/journal">
+          <Button size="sm" variant="outline">
+            📔 Journal
+          </Button>
+        </Link>
+      </section>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
         <section className="rounded-xl border border-border bg-card p-5 shadow-xs space-y-2">
@@ -93,9 +120,13 @@ export default async function TodayPage() {
             <p className="text-xs text-muted-foreground">Nothing due today.</p>
           ) : (
             dueToday.slice(0, 5).map((t) => (
-              <p key={t.id} className="text-xs text-foreground truncate">
+              <Link
+                key={t.id}
+                href="/tasks"
+                className="block text-xs text-foreground truncate hover:underline"
+              >
                 · {t.title}
-              </p>
+              </Link>
             ))
           )}
           <Link href="/tasks" className="block text-xs text-primary hover:underline font-medium">

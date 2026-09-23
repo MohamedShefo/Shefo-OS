@@ -20,6 +20,7 @@ export function TaskList({ initialTasks, projects, notes = [], captures = [] }: 
   const [priorityFilter, setPriorityFilter] = useState<'all' | TaskPriority>('all');
   const [selectedProjectId, setSelectedProjectId] = useState<string>('all');
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState<'due' | 'priority' | 'newest'>('due');
 
   const projectsMap: Record<string, string> = {};
   projects.forEach((p) => {
@@ -36,12 +37,33 @@ export function TaskList({ initialTasks, projects, notes = [], captures = [] }: 
     capturesMap[c.id] = c.raw_text.length > 40 ? `${c.raw_text.slice(0, 40)}…` : c.raw_text;
   });
 
-  const filteredTasks = initialTasks.filter((task) => {
-    if (statusFilter !== 'all' && task.status !== statusFilter) return false;
-    if (priorityFilter !== 'all' && task.priority !== priorityFilter) return false;
-    if (selectedProjectId !== 'all' && task.project_id !== selectedProjectId) return false;
-    return matchesQuery([task.title, task.description], search);
-  });
+  const PRIORITY_RANK: Record<string, number> = { high: 0, medium: 1, low: 2 };
+
+  const filteredTasks = initialTasks
+    .filter((task) => {
+      if (statusFilter !== 'all' && task.status !== statusFilter) return false;
+      if (priorityFilter !== 'all' && task.priority !== priorityFilter) return false;
+      if (selectedProjectId !== 'all' && task.project_id !== selectedProjectId) return false;
+      return matchesQuery([task.title, task.description], search);
+    })
+    .sort((a, b) => {
+      if (sortBy === 'priority') {
+        const ra = a.priority ? (PRIORITY_RANK[a.priority] ?? 3) : 3;
+        const rb = b.priority ? (PRIORITY_RANK[b.priority] ?? 3) : 3;
+        return ra - rb;
+      }
+      if (sortBy === 'newest') {
+        return b.created_at.localeCompare(a.created_at);
+      }
+      // Due date: overdue/dated first, undated last; done tasks sink.
+      const aDone = a.status === 'done' ? 1 : 0;
+      const bDone = b.status === 'done' ? 1 : 0;
+      if (aDone !== bDone) return aDone - bDone;
+      if (!a.due_date && !b.due_date) return b.created_at.localeCompare(a.created_at);
+      if (!a.due_date) return 1;
+      if (!b.due_date) return -1;
+      return a.due_date.localeCompare(b.due_date);
+    });
 
   if (initialTasks.length === 0) {
     return (
@@ -73,9 +95,19 @@ export function TaskList({ initialTasks, projects, notes = [], captures = [] }: 
           ))}
         </div>
 
-        {/* Priority, Project & Text Selectors */}
+        {/* Priority, Project, Sort & Text Selectors */}
         <div className="flex items-center gap-2 flex-wrap">
           <SearchField value={search} onChange={setSearch} placeholder="Search tasks…" />
+          <Select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as 'due' | 'priority' | 'newest')}
+            className="w-auto text-xs"
+            aria-label="Sort tasks"
+          >
+            <option value="due">Sort: Due date</option>
+            <option value="priority">Sort: Priority</option>
+            <option value="newest">Sort: Newest</option>
+          </Select>
           <Select
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value as 'all' | TaskPriority)}

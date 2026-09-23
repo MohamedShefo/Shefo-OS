@@ -1,9 +1,11 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { Task, TaskPriority, TaskStatus } from '@/types/database';
-import { updateTaskStatus, deleteTask } from '../actions';
+import { todayISO } from '@/lib/date';
+import { completeTaskOccurrence, updateTaskStatus, deleteTask } from '../actions';
+import { createEventFromTask } from '@/features/calendar/actions';
 import { Button } from '@/components/ui/button';
 
 interface TaskItemProps {
@@ -21,11 +23,27 @@ const priorityColors: Record<TaskPriority, string> = {
 
 export function TaskItem({ task, projectName, noteTitle, sourceCaptureText }: TaskItemProps) {
   const [isPending, startTransition] = useTransition();
+  const [scheduled, setScheduled] = useState(false);
+
+  const isOverdue =
+    task.status !== 'done' && !!task.due_date && task.due_date.slice(0, 10) < todayISO();
 
   const handleToggleDone = () => {
-    const nextStatus: TaskStatus = task.status === 'done' ? 'todo' : 'done';
     startTransition(async () => {
-      await updateTaskStatus(task.id, nextStatus);
+      if (task.status === 'done') {
+        await updateTaskStatus(task.id, 'todo');
+      } else {
+        // Recurring tasks spawn their next occurrence here; plain tasks just complete.
+        await completeTaskOccurrence(task.id);
+      }
+    });
+  };
+
+  const handleSchedule = () => {
+    if (isPending) return;
+    startTransition(async () => {
+      const res = await createEventFromTask(task.id);
+      if (res.success) setScheduled(true);
     });
   };
 
@@ -96,6 +114,12 @@ export function TaskItem({ task, projectName, noteTitle, sourceCaptureText }: Ta
                 📥 {sourceCaptureText}
               </span>
             )}
+
+            {task.recurrence && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-muted text-muted-foreground border border-border capitalize">
+                🔁 {task.recurrence}
+              </span>
+            )}
           </div>
 
           {task.description && (
@@ -105,8 +129,13 @@ export function TaskItem({ task, projectName, noteTitle, sourceCaptureText }: Ta
           )}
 
           {task.due_date && (
-            <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-              📅 Due {new Date(task.due_date).toLocaleDateString()}
+            <p
+              className={`text-[11px] flex items-center gap-1 ${
+                isOverdue ? 'text-destructive font-medium' : 'text-muted-foreground'
+              }`}
+            >
+              📅 {isOverdue ? 'Overdue since ' : 'Due '}
+              {new Date(task.due_date).toLocaleDateString()}
             </p>
           )}
 
@@ -129,6 +158,19 @@ export function TaskItem({ task, projectName, noteTitle, sourceCaptureText }: Ta
           <option value="in_progress">In Progress</option>
           <option value="done">Done</option>
         </select>
+
+        {task.due_date && task.status !== 'done' && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleSchedule}
+            disabled={isPending}
+            title={scheduled ? 'Added to calendar' : 'Add to calendar'}
+            className="opacity-0 group-hover:opacity-100 h-7 px-2 text-[11px] text-muted-foreground hover:text-foreground transition-all"
+          >
+            {scheduled ? '✓ 📅' : '📅'}
+          </Button>
+        )}
 
         <Button
           variant="ghost"

@@ -373,6 +373,28 @@ testing still blocked by the documented Auth login-500.
 
 ---
 
+## 17. Phase 9 — Productivity & Task Workflow (Implemented)
+
+- **Task workflow:** overdue highlighting (red, "Overdue since"), due-first
+  sorting with done-sinking, sort selector (due/priority/newest), recurrence
+  badge, ⏰ reminder display, 📅 schedule-to-calendar action on open tasks.
+- **Recurring tasks:** migration `0013_task_recurrence.sql` applied remotely
+  (`recurrence` CHECK daily/weekly/monthly + `parent_task_id` SET NULL);
+  `completeTaskOccurrence` marks done and spawns the next open occurrence
+  (dates advanced) only when no live child exists — toggling can never
+  duplicate or corrupt the series.
+- **Task→Calendar→Notifications→Today:** `createEventFromTask` (owned-task
+  guard, due-date required, +1h default); reminders already materialize via
+  Phase 7 lazy check; `/today` gained quick actions and deep links.
+- **No automation engine, no new tables beyond the two task columns.**
+
+**Verification:** `tsc` PASS, `lint` PASS (0/0), `build` PASS (29/29),
+new columns live remotely, history synced through `0013`, 5/5 routes HTTP 200
+with gates intact and no error markers. Authenticated interactive testing
+still blocked by the documented Auth login-500.
+
+---
+
 ## 13. Phase 6 Correction Pass — CLOSED
 
 - **Theme script:** raw `<script dangerouslySetInnerHTML>` in root layout replaced

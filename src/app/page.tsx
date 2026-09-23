@@ -107,7 +107,7 @@ export default async function Home() {
         initialPrefs={prefs}
       />
       <form action={logout} className="flex justify-end px-1">
-        <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-destructive">
+        <Button type="submit" variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-destructive">
           Sign Out
         </Button>
       </form>

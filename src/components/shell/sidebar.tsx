@@ -135,6 +135,7 @@ export function Sidebar({ userEmail, workspaces = [], currentWorkspaceId = null,
         )}
         <form action={logout}>
           <Button
+            type="submit"
             variant="ghost"
             size="sm"
             className="w-full justify-start text-xs text-muted-foreground hover:text-destructive"

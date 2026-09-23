@@ -354,6 +354,21 @@ interactive testing still blocked by the documented Auth login-500.
 
 ---
 
+## 18. Phase 10 — Dashboard / Workflow Refinement (Implemented)
+
+Small correctness-focused refinement using existing data only:
+- Goal widget progress is now milestone-aware (previously hardcoded to
+  status-only, which understated milestone-tracked goals).
+- Tasks widget surfaces an overdue count and orders overdue first.
+- Activity widget shows the next upcoming calendar events.
+- No schema changes, no new routes, no visual redesign.
+
+**Verification:** `tsc` PASS, `lint` PASS, `build` PASS (29/29), 5/5 routes
+HTTP 200 with gates intact and no error markers. Authenticated interactive
+testing still blocked by the documented Auth login-500.
+
+---
+
 ## 16. Phase 8 — Knowledge Layer + Sidebar UX (Implemented)
 
 - **Sidebar fix:** navigation column scrolls independently with a bottom fade

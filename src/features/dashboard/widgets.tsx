@@ -1,12 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import type { Capture, Goal, JournalEntry, Note, Project, Task } from '@/types/database';
+import type { CalendarEvent, Capture, Goal, JournalEntry, Note, Project, Task } from '@/types/database';
 import type { HabitWithProgress } from '@/features/habits/actions';
 import type { MonthSummary } from '@/features/finance/actions';
 import { formatTimer, useTimer } from '@/features/timer/use-timer';
-import { ProgressBar, goalProgress } from '@/features/goals/progress';
+import { ProgressBar } from '@/features/goals/progress';
 import { formatMoney } from '@/lib/format';
+import { todayISO } from '@/lib/date';
 import { normalizeTags } from '@/lib/utils';
 
 function Card({
@@ -43,21 +44,37 @@ function Card({
 }
 
 export function TasksWidget({ tasks }: { tasks: Task[] }) {
-  const pending = tasks.filter((t) => t.status !== 'done').slice(0, 4);
+  const pending = tasks.filter((t) => t.status !== 'done');
+  const overdue = pending.filter((t) => t.due_date && t.due_date.slice(0, 10) < todayISO());
+  const top = [...pending]
+    .sort((a, b) => {
+      const aOver = a.due_date && a.due_date.slice(0, 10) < todayISO() ? 0 : 1;
+      const bOver = b.due_date && b.due_date.slice(0, 10) < todayISO() ? 0 : 1;
+      return aOver - bOver;
+    })
+    .slice(0, 4);
   return (
-    <Card title="✅ Pending Tasks" count={tasks.filter((t) => t.status !== 'done').length} href="/tasks" hrefLabel="View All">
-      {pending.length === 0 ? (
+    <Card title="✅ Pending Tasks" count={pending.length} href="/tasks" hrefLabel="View All">
+      {overdue.length > 0 && (
+        <p className="text-[11px] font-medium text-destructive">
+          🔴 {overdue.length} overdue
+        </p>
+      )}
+      {top.length === 0 ? (
         <p className="text-xs text-muted-foreground py-4 text-center">No pending tasks.</p>
       ) : (
         <div className="space-y-2">
-          {pending.map((t) => (
-            <div key={t.id} className="flex items-center justify-between p-2.5 rounded-md bg-muted/40 text-xs border border-border/50">
-              <span className="font-medium text-foreground truncate max-w-[200px]">{t.title}</span>
-              <span className="capitalize text-[10px] text-muted-foreground shrink-0">
-                {t.status.replace('_', ' ')}
-              </span>
-            </div>
-          ))}
+          {top.map((t) => {
+            const isOver = !!t.due_date && t.due_date.slice(0, 10) < todayISO();
+            return (
+              <div key={t.id} className="flex items-center justify-between p-2.5 rounded-md bg-muted/40 text-xs border border-border/50">
+                <span className="font-medium text-foreground truncate max-w-[200px]">{t.title}</span>
+                <span className={`capitalize text-[10px] shrink-0 ${isOver ? 'text-destructive font-semibold' : 'text-muted-foreground'}`}>
+                  {isOver ? 'overdue' : t.status.replace('_', ' ')}
+                </span>
+              </div>
+            );
+          })}
         </div>
       )}
     </Card>
@@ -188,7 +205,7 @@ export function JournalWidget({ entries }: { entries: JournalEntry[] }) {
   );
 }
 
-export function GoalsWidget({ goals }: { goals: Goal[] }) {
+export function GoalsWidget({ goals, progressByGoal }: { goals: Goal[]; progressByGoal: Record<string, number> }) {
   const active = goals.filter((g) => g.status === 'active').slice(0, 3);
   return (
     <Card title="🎯 Active Goals" count={goals.filter((g) => g.status === 'active').length} href="/goals" hrefLabel="View All">
@@ -196,19 +213,22 @@ export function GoalsWidget({ goals }: { goals: Goal[] }) {
         <p className="text-xs text-muted-foreground py-4 text-center">No active goals.</p>
       ) : (
         <div className="space-y-3">
-          {active.map((g) => (
-            <div key={g.id} className="space-y-1.5">
-              <div className="flex items-center justify-between text-xs">
-                <Link href={`/goals/${g.id}`} className="font-medium text-foreground truncate hover:underline">
-                  {g.title}
-                </Link>
-                <span className="text-[10px] text-muted-foreground tabular-nums shrink-0">
-                  {goalProgress(g, [])}%
-                </span>
+          {active.map((g) => {
+            const pct = progressByGoal[g.id] ?? 0;
+            return (
+              <div key={g.id} className="space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+                  <Link href={`/goals/${g.id}`} className="font-medium text-foreground truncate hover:underline">
+                    {g.title}
+                  </Link>
+                  <span className="text-[10px] text-muted-foreground tabular-nums shrink-0">
+                    {pct}%
+                  </span>
+                </div>
+                <ProgressBar value={pct} label={`Goal ${g.title} progress`} />
               </div>
-              <ProgressBar value={goalProgress(g, [])} label={`Goal ${g.title} progress`} />
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </Card>
@@ -243,8 +263,10 @@ export function FinanceWidget({ summary, month }: { summary: MonthSummary; month
 
 export function ActivityWidget({
   stats,
+  upcoming,
 }: {
   stats: { captures: number; tasksDone: number; tasksTotal: number; notes: number; activeProjects: number };
+  upcoming: CalendarEvent[];
 }) {
   const rows: Array<[string, string]> = [
     ['Unprocessed inbox', String(stats.captures)],
@@ -262,6 +284,25 @@ export function ActivityWidget({
           </div>
         ))}
       </div>
+      {upcoming.length > 0 && (
+        <div className="space-y-1.5 border-t border-border/50 pt-2">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Up next
+          </p>
+          {upcoming.slice(0, 2).map((e) => (
+            <Link
+              key={e.id}
+              href="/calendar"
+              className="block truncate text-xs text-foreground hover:underline"
+            >
+              📅 {e.title}{' '}
+              <span className="text-muted-foreground">
+                {new Date(e.starts_at).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+              </span>
+            </Link>
+          ))}
+        </div>
+      )}
     </Card>
   );
 }

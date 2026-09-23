@@ -67,6 +67,7 @@
 | **Knowledge Layer** | Complete (Phase 8) | Build OK | Same `notes` entity + `is_pinned` flag (migration `0012`); pin toggle + pinned-first ordering; tag filter + sort (updated/created) in list; `getRelatedNotes` (project/tags/links scoring) + related section on detail; related project/workplace quick-nav chips. No graph DB, no AI, standalone notes preserved. |
 | **Task Workflow** | Complete (Phase 9) | Build OK | Clear priority/status display, overdue highlighting + due-first sorting, sort selector (due/priority/newest), recurrence (daily/weekly/monthly with spawn-once lineage), schedule-to-calendar action, reminder display. |
 | **Today Execution** | Improved (Phase 9) | Build OK | `/today` gained quick actions (New Task/Capture/Calendar/Journal) and deep links on attention + due rows. |
+| **Dashboard Refinement** | Complete (Phase 10) | Build OK | Goal widget progress now milestone-aware (was status-only); Tasks widget shows overdue count + overdue-first ordering; Activity widget shows next upcoming events. No schema changes. |
 | **Extension Recipe** | Complete (Phase 7) | Docs | `src/extensions/README.md` codifies the module pattern (migration → types → actions → UI → shell). No runtime abstraction. |
 
 ---

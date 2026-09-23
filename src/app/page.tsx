@@ -8,7 +8,10 @@ import { getTasks } from '@/features/tasks/actions';
 import { getHabits } from '@/features/habits/actions';
 import { getRecentJournalEntries } from '@/features/journal/actions';
 import { getGoals } from '@/features/goals/actions';
+import { getGoalMilestones } from '@/features/goals/actions';
+import { goalProgress } from '@/features/goals/progress';
 import { getMonthSummary } from '@/features/finance/actions';
+import { getUpcomingEvents } from '@/features/calendar/actions';
 import { getDashboardPrefs } from '@/features/dashboard/actions';
 import { Button } from '@/components/ui/button';
 import { AppShell } from '@/components/shell/app-shell';
@@ -56,7 +59,7 @@ export default async function Home() {
   // Authenticated dashboard data (bounded lists; widgets narrow further).
   const now = new Date();
   const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-  const [captures, projects, notes, tasks, habits, journal, goals, financeSummary, prefs] =
+  const [captures, projects, notes, tasks, habits, journal, goals, financeSummary, prefs, upcoming] =
     await Promise.all([
       getUnprocessedCaptures(),
       getProjects(),
@@ -67,9 +70,15 @@ export default async function Home() {
       getGoals('active'),
       getMonthSummary(month),
       getDashboardPrefs(),
+      getUpcomingEvents(7, 2),
     ]);
 
   const doneTasks = tasks.filter((t) => t.status === 'done');
+  const milestones = await Promise.all(goals.map((g) => getGoalMilestones(g.id)));
+  const goalProgressById: Record<string, number> = {};
+  goals.forEach((g, i) => {
+    goalProgressById[g.id] = goalProgress(g, milestones[i]);
+  });
 
   return (
     <AppShell userEmail={user.email}>
@@ -83,6 +92,8 @@ export default async function Home() {
           habits,
           journal,
           goals,
+          goalProgressById,
+          upcoming,
           financeSummary,
           financeMonth: month,
           activity: {

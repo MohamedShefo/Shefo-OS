@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
-import type { Capture, Goal, JournalEntry, Note, Project, Task } from '@/types/database';
+import type { CalendarEvent, Capture, Goal, JournalEntry, Note, Project, Task } from '@/types/database';
 import type { HabitWithProgress } from '@/features/habits/actions';
 import type { MonthSummary } from '@/features/finance/actions';
 import {
@@ -35,6 +35,8 @@ interface DashboardData {
   habits: HabitWithProgress[];
   journal: JournalEntry[];
   goals: Goal[];
+  goalProgressById: Record<string, number>;
+  upcoming: CalendarEvent[];
   financeSummary: MonthSummary;
   financeMonth: string;
   activity: { captures: number; tasksDone: number; tasksTotal: number; notes: number; activeProjects: number };
@@ -122,11 +124,11 @@ export function DashboardClient({
       case 'timer':
         return <TimerInlineWidget />;
       case 'goals':
-        return <GoalsWidget goals={data.goals} />;
+        return <GoalsWidget goals={data.goals} progressByGoal={data.goalProgressById} />;
       case 'finance':
         return <FinanceWidget summary={data.financeSummary} month={data.financeMonth} />;
       case 'activity':
-        return <ActivityWidget stats={data.activity} />;
+        return <ActivityWidget stats={data.activity} upcoming={data.upcoming} />;
     }
   };
 

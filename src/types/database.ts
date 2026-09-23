@@ -42,6 +42,7 @@ export interface Note {
   note_type: string | null;
   workspace_id: string | null;
   goal_id: string | null;
+  is_pinned: boolean;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;

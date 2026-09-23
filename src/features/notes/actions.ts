@@ -23,6 +23,7 @@ export interface UpdateNotePayload {
   work_experience_id?: string | null;
   note_type?: string | null;
   goal_id?: string | null;
+  is_pinned?: boolean;
 }
 
 export async function getNotes(workspaceId?: string | null): Promise<Note[]> {
@@ -133,6 +134,7 @@ export async function updateNote(
       updateData.work_experience_id = payload.work_experience_id;
     if (payload.note_type !== undefined) updateData.note_type = payload.note_type?.trim() || null;
     if (payload.goal_id !== undefined) updateData.goal_id = payload.goal_id;
+    if (payload.is_pinned !== undefined) updateData.is_pinned = payload.is_pinned;
 
     const { data, error } = await supabase
       .from('notes')
@@ -187,6 +189,97 @@ export async function deleteNote(
   } catch (err) {
     console.error('Unexpected error in deleteNote:', err);
     return { success: false, error: 'An unexpected error occurred' };
+  }
+}
+
+/** Distinct tags across the user's live notes (bounded, for filtering). */
+export async function getNoteTags(limit = 100): Promise<string[]> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) return [];
+    const { data, error } = await supabase
+      .from('notes')
+      .select('tags')
+      .eq('user_id', user.id)
+      .is('deleted_at', null)
+      .not('tags', 'is', null)
+      .limit(500);
+    if (error) {
+      console.error('Error fetching note tags:', error.message || error);
+      return [];
+    }
+    const set = new Set<string>();
+    for (const row of (data as Array<{ tags: string[] | null }>) || []) {
+      for (const t of row.tags ?? []) {
+        const tag = t.trim().toLowerCase();
+        if (tag) set.add(tag);
+        if (set.size >= limit) break;
+      }
+      if (set.size >= limit) break;
+    }
+    return [...set].sort((a, b) => a.localeCompare(b));
+  } catch (err) {
+    console.error('Unexpected error in getNoteTags:', err);
+    return [];
+  }
+}
+
+/**
+ * Deterministic "related notes": same project first, then shared tags,
+ * then directly linked notes. Excludes self and trashed notes.
+ */
+export async function getRelatedNotes(noteId: string, limit = 6): Promise<Note[]> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) return [];
+    const source = await getNoteById(noteId);
+    if (!source) return [];
+
+    const { data, error } = await supabase
+      .from('notes')
+      .select('*')
+      .eq('user_id', user.id)
+      .is('deleted_at', null)
+      .neq('id', noteId)
+      .order('updated_at', { ascending: false })
+      .limit(60);
+    if (error) {
+      console.error('Error fetching related notes:', error.message || error);
+      return [];
+    }
+    const candidates = (data as Note[]) || [];
+    const sourceTags = new Set((source.tags ?? []).map((t) => t.trim().toLowerCase()));
+    const [outgoing, incoming] = await Promise.all([
+      getOutgoingNoteLinks(noteId),
+      getIncomingNoteLinks(noteId),
+    ]);
+    const linkedIds = new Set([...outgoing, ...incoming].map((l) => l.note.id));
+
+    const scored = candidates.map((n) => {
+      let score = 0;
+      if (source.project_id && n.project_id === source.project_id) score += 3;
+      const shared = (n.tags ?? []).filter((t) => sourceTags.has(t.trim().toLowerCase())).length;
+      score += Math.min(2, shared);
+      if (linkedIds.has(n.id)) score += 4;
+      if (n.is_pinned) score += 1;
+      return { note: n, score };
+    });
+    return scored
+      .filter((s) => s.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit)
+      .map((s) => s.note);
+  } catch (err) {
+    console.error('Unexpected error in getRelatedNotes:', err);
+    return [];
   }
 }
 

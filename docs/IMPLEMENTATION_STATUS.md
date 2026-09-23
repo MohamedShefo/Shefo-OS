@@ -63,6 +63,8 @@
 | **Rich Linking** | Complete (Phase 7) | Build OK | Project badges link to hubs (captures, tasks); note source-capture links to inbox. FK-based only. |
 | **Goals Tracking** | Pre-existing (Phase 6) | Build OK | Goals system already covers title/description/status/progress/targets/milestones + relations. No new work needed. |
 | **PWA Readiness** | Complete (Phase 7 foundation) | Build OK | `icon.svg` + `manifest.ts` (standalone, theme colors). No service worker/offline sync (deferred). |
+| **Sidebar Scroll UX** | Complete (Phase 8) | Build OK | Nav area scrolls independently (`flex-1`, thin scrollbar, bottom fade affordance); footer controls always reachable; mobile drawer capped at 70vh. No viewport/layout change. |
+| **Knowledge Layer** | Complete (Phase 8) | Build OK | Same `notes` entity + `is_pinned` flag (migration `0012`); pin toggle + pinned-first ordering; tag filter + sort (updated/created) in list; `getRelatedNotes` (project/tags/links scoring) + related section on detail; related project/workplace quick-nav chips. No graph DB, no AI, standalone notes preserved. |
 | **Extension Recipe** | Complete (Phase 7) | Docs | `src/extensions/README.md` codifies the module pattern (migration → types → actions → UI → shell). No runtime abstraction. |
 
 ---

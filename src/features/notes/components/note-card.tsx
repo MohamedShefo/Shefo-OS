@@ -33,6 +33,12 @@ export function NoteCard({ note, projectsMap, projects, works = [] }: NoteCardPr
     });
   };
 
+  const handlePin = () => {
+    startTransition(async () => {
+      await updateNote(note.id, { is_pinned: !note.is_pinned });
+    });
+  };
+
   const handleUpdate = (e: FormEvent) => {
     e.preventDefault();
     if (!title.trim() || isPending) return;
@@ -151,6 +157,7 @@ export function NoteCard({ note, projectsMap, projects, works = [] }: NoteCardPr
                 href={`/notes/${note.id}`}
                 className="font-semibold text-base leading-tight tracking-tight text-foreground hover:underline underline-offset-4"
               >
+                {note.is_pinned && <span aria-hidden="true">📌 </span>}
                 {note.title}
               </Link>
               <span className="flex shrink-0 items-center gap-1">
@@ -196,6 +203,17 @@ export function NoteCard({ note, projectsMap, projects, works = [] }: NoteCardPr
             <span>{new Date(note.created_at).toLocaleDateString()}</span>
 
             <div className="flex items-center gap-1 opacity-90 group-hover:opacity-100 transition-opacity">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handlePin}
+                disabled={isPending}
+                title={note.is_pinned ? 'Unpin' : 'Pin to top'}
+                aria-label={note.is_pinned ? 'Unpin note' : 'Pin note'}
+                className="h-7 px-2 text-[11px] text-muted-foreground hover:text-foreground"
+              >
+                {note.is_pinned ? '📌' : '📍'}
+              </Button>
               <Button
                 variant="ghost"
                 size="sm"

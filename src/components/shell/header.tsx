@@ -56,7 +56,7 @@ export function Header({ userEmail, workspaces = [], currentWorkspaceId = null, 
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="pt-4 pb-2 space-y-3 animate-in fade-in slide-in-from-top-2 duration-150 border-t border-border mt-3">
+        <div className="pt-4 pb-2 space-y-3 animate-in fade-in slide-in-from-top-2 duration-150 border-t border-border mt-3 max-h-[70vh] overflow-y-auto">
           <nav className="space-y-1">
             {NAV_ITEMS.map((item) => {
               const isActive =

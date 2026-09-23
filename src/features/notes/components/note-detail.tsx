@@ -21,6 +21,7 @@ interface NoteDetailProps {
   linkedSkills: Skill[];
   allSkills: Skill[];
   linkedTasks: Task[];
+  related: Note[];
   projects: Project[];
   works: WorkExperience[];
   projectsMap: Record<string, string>;
@@ -53,7 +54,7 @@ function renderBlockContent(b: NoteBlock): React.ReactNode {
 }
 
 export function NoteDetail(props: NoteDetailProps) {
-  const { note, blocks, outgoing, incoming, allNotes, linkedSkills, allSkills, linkedTasks } = props;
+  const { note, blocks, outgoing, incoming, allNotes, linkedSkills, allSkills, linkedTasks, related } = props;
   const [mode, setMode] = useState<ViewMode>('read');
   const [graphOpen, setGraphOpen] = useState(false);
   const tags = normalizeTags(note.tags);
@@ -135,6 +136,30 @@ export function NoteDetail(props: NoteDetailProps) {
 
   return (
     <div className="space-y-6">
+      {(note.project_id || note.work_experience_id) && (
+        <div className="flex flex-wrap items-center gap-1.5 px-1" aria-label="Related">
+          <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+            Related:
+          </span>
+          {note.project_id && props.projectsMap[note.project_id] && (
+            <Link
+              href={`/projects/${note.project_id}`}
+              className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium bg-primary/10 text-primary border border-primary/20 hover:underline"
+            >
+              📁 {props.projectsMap[note.project_id]}
+            </Link>
+          )}
+          {note.work_experience_id && props.worksMap[note.work_experience_id] && (
+            <Link
+              href={`/work/${note.work_experience_id}`}
+              className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium bg-primary/10 text-primary border border-primary/20 hover:underline"
+            >
+              💼 {props.worksMap[note.work_experience_id]}
+            </Link>
+          )}
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center gap-1.5 border-b border-border pb-3">
         {(['read', 'edit', 'split'] as const).map((m) => (
           <button
@@ -180,6 +205,31 @@ export function NoteDetail(props: NoteDetailProps) {
       )}
 
       <NoteLinksManager noteId={note.id} outgoing={outgoing} incoming={incoming} allNotes={allNotes} />
+
+      {related.length > 0 && (
+        <div className="rounded-xl border border-border bg-card p-4 shadow-xs space-y-2">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Related Notes
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {related.map((r) => (
+              <Link
+                key={r.id}
+                href={`/notes/${r.id}`}
+                className="rounded-lg border border-border/60 p-2.5 transition-colors hover:border-ring/40"
+              >
+                <p className="text-xs font-medium text-foreground truncate">
+                  {r.is_pinned && <span aria-hidden="true">📌 </span>}
+                  {r.title}
+                </p>
+                <p className="text-[11px] text-muted-foreground">
+                  Updated {new Date(r.updated_at).toLocaleDateString()}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
       <NoteSkillsManager noteId={note.id} linkedSkills={linkedSkills} allSkills={allSkills} />
 
       {linkedTasks.length > 0 && (

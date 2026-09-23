@@ -354,6 +354,25 @@ interactive testing still blocked by the documented Auth login-500.
 
 ---
 
+## 16. Phase 8 — Knowledge Layer + Sidebar UX (Implemented)
+
+- **Sidebar fix:** navigation column scrolls independently with a bottom fade
+  affordance and thin scrollbar; footer (theme, profile, logout) pinned and
+  always reachable; mobile drawer capped at 70vh. No viewport or identity change.
+- **Knowledge:** same `notes` entity; `0012_notes_pinned.sql` applied remotely
+  (single `is_pinned` column + index, history synced through `0012`, no RLS
+  change needed); pin toggle + pinned-first ordering; tag filter (from distinct
+  user tags) + updated/created sort; deterministic `getRelatedNotes`
+  (project/tags/manual-links scoring); related-notes section + project/workplace
+  quick-nav chips on the detail page. Tags and `note_type` reused instead of a
+  new category system; standalone notes unchanged.
+
+**Verification:** `tsc` PASS, `lint` PASS, `build` PASS (29/29), 10/10 routes
+HTTP 200 with gates intact and no error markers. Authenticated interactive
+testing still blocked by the documented Auth login-500.
+
+---
+
 ## 13. Phase 6 Correction Pass — CLOSED
 
 - **Theme script:** raw `<script dangerouslySetInnerHTML>` in root layout replaced

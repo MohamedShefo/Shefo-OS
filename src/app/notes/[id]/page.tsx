@@ -1,12 +1,12 @@
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/server';
-import {
-  getNoteById,
+import { getNoteById,
   getNoteBlocks,
   getOutgoingNoteLinks,
   getIncomingNoteLinks,
   getNotes,
+  getRelatedNotes,
 } from '@/features/notes/actions';
 import { getProjects } from '@/features/projects/actions';
 import { getWorkExperiences } from '@/features/work/actions';
@@ -48,7 +48,7 @@ export default async function NoteDetailPage({ params }: NoteDetailPageProps) {
     notFound();
   }
 
-  const [blocks, outgoing, incoming, allNotes, linkedSkills, allSkills, linkedTasks, projects, works, captures, attachments] =
+  const [blocks, outgoing, incoming, allNotes, linkedSkills, allSkills, linkedTasks, projects, works, captures, attachments, related] =
     await Promise.all([
       getNoteBlocks(id),
       getOutgoingNoteLinks(id),
@@ -61,6 +61,7 @@ export default async function NoteDetailPage({ params }: NoteDetailPageProps) {
       getWorkExperiences(),
       getUnprocessedCaptures(),
       getAttachments('note', id),
+      getRelatedNotes(id),
     ]);
 
   const projectsMap: Record<string, string> = {};
@@ -118,6 +119,7 @@ export default async function NoteDetailPage({ params }: NoteDetailPageProps) {
           linkedSkills={linkedSkills}
           allSkills={allSkills}
           linkedTasks={linkedTasks}
+          related={related}
           projects={projects}
           works={works}
           projectsMap={projectsMap}

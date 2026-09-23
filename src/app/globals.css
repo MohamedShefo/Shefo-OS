@@ -141,6 +141,22 @@
   }
 }
 
+/* Subtle sidebar scroll area (keeps footer reachable on short viewports). */
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.sidebar-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 /* Smooth, performance-friendly micro-interactions use CSS only.
    Honor users who prefer reduced motion. */
 @media (prefers-reduced-motion: reduce) {

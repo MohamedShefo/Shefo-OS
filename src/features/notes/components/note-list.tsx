@@ -11,34 +11,51 @@ interface NoteListProps {
   initialNotes: Note[];
   projects: Project[];
   works?: WorkExperience[];
+  tags?: string[];
 }
 
-export function NoteList({ initialNotes, projects, works = [] }: NoteListProps) {
+export function NoteList({ initialNotes, projects, works = [], tags = [] }: NoteListProps) {
   const [search, setSearch] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState<string>('all');
+  const [selectedTag, setSelectedTag] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<'updated' | 'created'>('updated');
 
   const projectsMap: Record<string, string> = {};
   projects.forEach((p) => {
     projectsMap[p.id] = p.name;
   });
 
-  const filteredNotes = initialNotes.filter((note) => {
-    // Project filter
-    if (selectedProjectId !== 'all' && note.project_id !== selectedProjectId) {
-      return false;
-    }
+  const filteredNotes = initialNotes
+    .filter((note) => {
+      // Project filter
+      if (selectedProjectId !== 'all' && note.project_id !== selectedProjectId) {
+        return false;
+      }
 
-    // Search filter
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      const titleMatch = note.title.toLowerCase().includes(q);
-      const contentMatch = note.content?.toLowerCase().includes(q);
-      const tagMatch = note.tags?.some((t) => t.toLowerCase().includes(q));
-      return titleMatch || contentMatch || tagMatch;
-    }
+      // Tag filter
+      if (selectedTag !== 'all') {
+        const noteTags = (note.tags ?? []).map((t) => t.trim().toLowerCase());
+        if (!noteTags.includes(selectedTag)) return false;
+      }
 
-    return true;
-  });
+      // Search filter
+      if (search.trim()) {
+        const q = search.toLowerCase();
+        const titleMatch = note.title.toLowerCase().includes(q);
+        const contentMatch = note.content?.toLowerCase().includes(q);
+        const tagMatch = note.tags?.some((t) => t.toLowerCase().includes(q));
+        return titleMatch || contentMatch || tagMatch;
+      }
+
+      return true;
+    })
+    .sort((a, b) => {
+      // Pinned notes float to the top within the current sort.
+      if (!!a.is_pinned !== !!b.is_pinned) return a.is_pinned ? -1 : 1;
+      const left = sortBy === 'updated' ? a.updated_at : a.created_at;
+      const right = sortBy === 'updated' ? b.updated_at : b.created_at;
+      return right.localeCompare(left);
+    });
 
   if (initialNotes.length === 0) {
     return (
@@ -51,8 +68,8 @@ export function NoteList({ initialNotes, projects, works = [] }: NoteListProps) 
 
   return (
     <div className="space-y-4">
-      {/* Search & Project Filter Controls */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 border-b border-border pb-4">
+      {/* Search & Filter Controls */}
+      <div className="flex flex-col gap-3 border-b border-border pb-4">
         <Input
           type="text"
           value={search}
@@ -61,18 +78,47 @@ export function NoteList({ initialNotes, projects, works = [] }: NoteListProps) 
           className="flex-1 text-xs"
         />
 
-        <Select
-          value={selectedProjectId}
-          onChange={(e) => setSelectedProjectId(e.target.value)}
-          className="w-full sm:w-48 text-xs"
-        >
-          <option value="all">All Projects</option>
-          {projects.map((p) => (
-            <option key={p.id} value={p.id}>
-              📁 {p.name}
-            </option>
-          ))}
-        </Select>
+        <div className="flex flex-wrap items-center gap-2">
+          <Select
+            value={selectedProjectId}
+            onChange={(e) => setSelectedProjectId(e.target.value)}
+            className="w-auto text-xs"
+            aria-label="Filter by project"
+          >
+            <option value="all">All Projects</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>
+                📁 {p.name}
+              </option>
+            ))}
+          </Select>
+
+          {tags.length > 0 && (
+            <Select
+              value={selectedTag}
+              onChange={(e) => setSelectedTag(e.target.value)}
+              className="w-auto text-xs"
+              aria-label="Filter by tag"
+            >
+              <option value="all">All Tags</option>
+              {tags.map((t) => (
+                <option key={t} value={t}>
+                  #{t}
+                </option>
+              ))}
+            </Select>
+          )}
+
+          <Select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as 'updated' | 'created')}
+            className="w-auto text-xs"
+            aria-label="Sort notes"
+          >
+            <option value="updated">Recently updated</option>
+            <option value="created">Recently created</option>
+          </Select>
+        </div>
       </div>
 
       {/* Grid */}

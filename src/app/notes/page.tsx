@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/server';
-import { getNotes } from '@/features/notes/actions';
+import { getNotes, getNoteTags } from '@/features/notes/actions';
 import { getProjects } from '@/features/projects/actions';
 import { getWorkExperiences } from '@/features/work/actions';
 import { getCurrentWorkspaceId } from '@/features/workspaces/actions';
@@ -27,10 +27,11 @@ export default async function NotesPage() {
   }
 
   const workspaceId = await getCurrentWorkspaceId();
-  const [notes, projects, works] = await Promise.all([
+  const [notes, projects, works, tags] = await Promise.all([
     getNotes(workspaceId),
     getProjects(),
     getWorkExperiences(),
+    getNoteTags(),
   ]);
 
   return (
@@ -53,7 +54,7 @@ export default async function NotesPage() {
 
       {/* Note List / Grid */}
       <section>
-        <NoteList initialNotes={notes} projects={projects} works={works} />
+        <NoteList initialNotes={notes} projects={projects} works={works} tags={tags} />
       </section>
     </AppShell>
   );

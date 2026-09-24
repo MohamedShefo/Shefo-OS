@@ -62,7 +62,7 @@ function renderBlockContent(
 export function NoteDetail(props: NoteDetailProps) {
   const { note, blocks, outgoing, incoming, allNotes, linkedSkills, allSkills, linkedTasks, related, wikilinkBacklinks } = props;
   const [mode, setMode] = useState<ViewMode>('read');
-  const [graphOpen, setGraphOpen] = useState(false);
+  const [graphOpen, setGraphOpen] = useState(true);
   const tags = normalizeTags(note.tags);
   const titleMap = buildTitleMap(allNotes.filter((n) => n.id !== note.id));
   const linkify = (text: string) => renderWikilinks(text, titleMap);
@@ -230,22 +230,32 @@ export function NoteDetail(props: NoteDetailProps) {
         </button>
       </div>
 
-      {graphOpen && (
-        <div className="flex justify-center animate-in fade-in duration-150">
-          <NoteGraph centerLabel={note.title} neighbors={neighbors} />
+      {/* Workspace split: note content alongside the live graph (stacks on mobile). */}
+      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_300px] gap-4 items-start">
+        <div className="min-w-0 space-y-6">
+          {mode === 'read' && readPane}
+          {mode === 'edit' && <BlocksEditor noteId={note.id} initialBlocks={blocks} />}
+          {mode === 'split' && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+              <div className="min-w-0">{readPane}</div>
+              <div className="min-w-0">
+                <BlocksEditor noteId={note.id} initialBlocks={blocks} />
+              </div>
+            </div>
+          )}
         </div>
-      )}
-
-      {mode === 'read' && readPane}
-      {mode === 'edit' && <BlocksEditor noteId={note.id} initialBlocks={blocks} />}
-      {mode === 'split' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
-          <div className="min-w-0">{readPane}</div>
-          <div className="min-w-0">
-            <BlocksEditor noteId={note.id} initialBlocks={blocks} />
-          </div>
-        </div>
-      )}
+        {graphOpen && (
+          <aside
+            aria-label="Note graph"
+            className="min-w-0 xl:sticky xl:top-4 space-y-2 animate-in fade-in duration-150"
+          >
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1">
+              Graph
+            </h3>
+            <NoteGraph centerLabel={note.title} neighbors={neighbors} />
+          </aside>
+        )}
+      </div>
 
       <NoteLinksManager noteId={note.id} outgoing={outgoing} incoming={incoming} allNotes={allNotes} />
 

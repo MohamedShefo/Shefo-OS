@@ -1,5 +1,6 @@
 'use server';
 
+import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
@@ -60,5 +61,20 @@ export async function logout() {
     await logSecurityEvent('auth.logout', {});
   }
   await supabase.auth.signOut();
+  // Belt-and-braces: make sure the Supabase session cookies are actually
+  // gone even if the client's cookie write path was swallowed upstream.
+  // Without this (or fresh route data), the router can re-render the cached
+  // authenticated view and logout appears to do nothing.
+  try {
+    const store = await cookies();
+    for (const c of store.getAll()) {
+      if (c.name.startsWith('sb-') && c.name.includes('auth-token')) {
+        store.delete(c.name);
+      }
+    }
+  } catch {
+    // Cookie store unavailable — signOut already attempted above.
+  }
+  revalidatePath('/', 'layout');
   redirect('/login');
 }

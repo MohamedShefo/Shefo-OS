@@ -8,6 +8,7 @@ import { BlocksEditor } from './blocks-editor';
 import { NoteLinksManager } from './note-links-manager';
 import { NoteSkillsManager } from './note-skills-manager';
 import { NoteGraph, type GraphNeighbor } from './note-graph';
+import { buildTitleMap, renderWikilinks } from '../wikilinks';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { normalizeTags } from '@/lib/utils';
@@ -32,10 +33,13 @@ interface NoteDetailProps {
 
 type ViewMode = 'read' | 'edit' | 'split';
 
-function renderBlockContent(b: NoteBlock): React.ReactNode {
+function renderBlockContent(
+  b: NoteBlock,
+  linkify: (text: string) => React.ReactNode
+): React.ReactNode {
   const text = b.content ?? '';
   if (b.block_type === 'heading') {
-    return <h3 className="text-base font-bold tracking-tight text-foreground">{text}</h3>;
+    return <h3 className="text-base font-bold tracking-tight text-foreground">{linkify(text)}</h3>;
   }
   if (b.block_type === 'list') {
     return (
@@ -45,13 +49,13 @@ function renderBlockContent(b: NoteBlock): React.ReactNode {
             <span aria-hidden="true" className="text-muted-foreground">
               •
             </span>
-            <span className="whitespace-pre-wrap">{line.replace(/^•\s?/, '')}</span>
+            <span className="whitespace-pre-wrap">{linkify(line.replace(/^•\s?/, ''))}</span>
           </li>
         ))}
       </ul>
     );
   }
-  return <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">{text}</p>;
+  return <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">{linkify(text)}</p>;
 }
 
 export function NoteDetail(props: NoteDetailProps) {
@@ -59,6 +63,8 @@ export function NoteDetail(props: NoteDetailProps) {
   const [mode, setMode] = useState<ViewMode>('read');
   const [graphOpen, setGraphOpen] = useState(false);
   const tags = normalizeTags(note.tags);
+  const titleMap = buildTitleMap(allNotes.filter((n) => n.id !== note.id));
+  const linkify = (text: string) => renderWikilinks(text, titleMap);
 
   const neighbors: GraphNeighbor[] = [
     ...outgoing.map((l) => ({
@@ -119,16 +125,20 @@ export function NoteDetail(props: NoteDetailProps) {
 
   const readPane = (
     <div className="space-y-4 rounded-xl border border-border bg-card p-5 shadow-xs">
+      <p className="text-[11px] text-muted-foreground">
+        Created {new Date(note.created_at).toLocaleString()} · Updated{' '}
+        {new Date(note.updated_at).toLocaleString()}
+      </p>
       {blocks.length === 0 ? (
         note.content ? (
-          <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">{note.content}</p>
+          <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">{linkify(note.content)}</p>
         ) : (
           <p className="text-xs text-muted-foreground">
             Empty note. Switch to Edit to add blocks.
           </p>
         )
       ) : (
-        blocks.map((b) => <div key={b.id}>{renderBlockContent(b)}</div>)
+        blocks.map((b) => <div key={b.id}>{renderBlockContent(b, linkify)}</div>)
       )}
       {tags.length > 0 && (
         <div className="flex flex-wrap gap-1 pt-2 border-t border-border/50">

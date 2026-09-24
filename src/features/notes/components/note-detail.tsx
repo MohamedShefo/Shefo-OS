@@ -8,7 +8,7 @@ import { BlocksEditor } from './blocks-editor';
 import { NoteLinksManager } from './note-links-manager';
 import { NoteSkillsManager } from './note-skills-manager';
 import { NoteGraph, type GraphNeighbor } from './note-graph';
-import { buildTitleMap, renderWikilinks } from '../wikilinks';
+import { buildTitleMap, findWikilinkOutgoing, renderWikilinks } from '../wikilinks';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { normalizeTags } from '@/lib/utils';
@@ -23,6 +23,7 @@ interface NoteDetailProps {
   allSkills: Skill[];
   linkedTasks: Task[];
   related: Note[];
+  wikilinkBacklinks: Array<{ id: string; title: string }>;
   projects: Project[];
   works: WorkExperience[];
   projectsMap: Record<string, string>;
@@ -59,12 +60,19 @@ function renderBlockContent(
 }
 
 export function NoteDetail(props: NoteDetailProps) {
-  const { note, blocks, outgoing, incoming, allNotes, linkedSkills, allSkills, linkedTasks, related } = props;
+  const { note, blocks, outgoing, incoming, allNotes, linkedSkills, allSkills, linkedTasks, related, wikilinkBacklinks } = props;
   const [mode, setMode] = useState<ViewMode>('read');
   const [graphOpen, setGraphOpen] = useState(false);
   const tags = normalizeTags(note.tags);
   const titleMap = buildTitleMap(allNotes.filter((n) => n.id !== note.id));
   const linkify = (text: string) => renderWikilinks(text, titleMap);
+  const manualIds = new Set([...outgoing.map((l) => l.note.id), ...incoming.map((l) => l.note.id)]);
+  const mentions = wikilinkBacklinks.filter((w) => !manualIds.has(w.id));
+  const outgoingMentions = findWikilinkOutgoing(
+    note.id,
+    [note.content, ...blocks.map((b) => b.content)],
+    titleMap
+  );
 
   const neighbors: GraphNeighbor[] = [
     ...outgoing.map((l) => ({
@@ -79,6 +87,20 @@ export function NoteDetail(props: NoteDetailProps) {
       kind: 'note' as const,
       href: `/notes/${l.note.id}`,
     })),
+    ...mentions.map((w) => ({
+      key: `wiki-in-${w.id}`,
+      label: w.title,
+      kind: 'note' as const,
+      href: `/notes/${w.id}`,
+    })),
+    ...outgoingMentions
+      .filter((m) => !outgoing.some((l) => l.note.id === m.id))
+      .map((m) => ({
+        key: `wiki-out-${m.id}`,
+        label: m.title,
+        kind: 'note' as const,
+        href: `/notes/${m.id}`,
+      })),
     ...linkedSkills.map((s) => ({
       key: `skill-${s.id}`,
       label: s.name,
@@ -226,6 +248,26 @@ export function NoteDetail(props: NoteDetailProps) {
       )}
 
       <NoteLinksManager noteId={note.id} outgoing={outgoing} incoming={incoming} allNotes={allNotes} />
+
+      {mentions.length > 0 && (
+        <div className="rounded-xl border border-border bg-card p-4 shadow-xs space-y-2">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Mentioned In
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {mentions.map((w) => (
+              <Link
+                key={w.id}
+                href={`/notes/${w.id}`}
+                className="rounded-lg border border-border/60 p-2.5 transition-colors hover:border-ring/40"
+              >
+                <p className="text-xs font-medium text-foreground truncate">{w.title}</p>
+                <p className="text-[11px] text-muted-foreground">references this note with [[…]]</p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {related.length > 0 && (
         <div className="rounded-xl border border-border bg-card p-4 shadow-xs space-y-2">

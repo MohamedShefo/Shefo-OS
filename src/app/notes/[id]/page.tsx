@@ -8,6 +8,7 @@ import { getNoteById,
   getNotes,
   getRelatedNotes,
 } from '@/features/notes/actions';
+import { findWikilinkBacklinks } from '@/features/notes/wikilinks';
 import { getProjects } from '@/features/projects/actions';
 import { getWorkExperiences } from '@/features/work/actions';
 import { getNoteSkills, getSkills } from '@/features/skills/actions';
@@ -63,6 +64,8 @@ export default async function NoteDetailPage({ params }: NoteDetailPageProps) {
       getAttachments('note', id),
       getRelatedNotes(id),
     ]);
+
+  const wikilinkBacklinks = findWikilinkBacklinks(note.id, note.title, allNotes);
 
   const projectsMap: Record<string, string> = {};
   projects.forEach((p) => {
@@ -120,6 +123,7 @@ export default async function NoteDetailPage({ params }: NoteDetailPageProps) {
           allSkills={allSkills}
           linkedTasks={linkedTasks}
           related={related}
+          wikilinkBacklinks={wikilinkBacklinks}
           projects={projects}
           works={works}
           projectsMap={projectsMap}

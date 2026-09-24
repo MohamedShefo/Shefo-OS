@@ -231,7 +231,7 @@ export function NoteDetail(props: NoteDetailProps) {
       </div>
 
       {/* Workspace split: note content alongside the live graph (stacks on mobile). */}
-      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_300px] gap-4 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-4 items-start">
         <div className="min-w-0 space-y-6">
           {mode === 'read' && readPane}
           {mode === 'edit' && <BlocksEditor noteId={note.id} initialBlocks={blocks} />}
@@ -247,7 +247,7 @@ export function NoteDetail(props: NoteDetailProps) {
         {graphOpen && (
           <aside
             aria-label="Note graph"
-            className="min-w-0 xl:sticky xl:top-4 space-y-2 animate-in fade-in duration-150"
+            className="min-w-0 lg:sticky lg:top-4 space-y-2 animate-in fade-in duration-150"
           >
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1">
               Graph

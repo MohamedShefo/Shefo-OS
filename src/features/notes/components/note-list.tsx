@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Note, Project, WorkExperience } from '@/types/database';
+import { normalizeTags } from '@/lib/utils';
 import { NoteCard } from './note-card';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -34,8 +35,9 @@ export function NoteList({ initialNotes, projects, works = [], tags = [] }: Note
 
       // Tag filter
       if (selectedTag !== 'all') {
-        const noteTags = (note.tags ?? []).map((t) => t.trim().toLowerCase());
-        if (!noteTags.includes(selectedTag)) return false;
+        if (!normalizeTags(note.tags).map((t) => t.toLowerCase()).includes(selectedTag)) {
+          return false;
+        }
       }
 
       // Search filter
@@ -43,7 +45,7 @@ export function NoteList({ initialNotes, projects, works = [], tags = [] }: Note
         const q = search.toLowerCase();
         const titleMatch = note.title.toLowerCase().includes(q);
         const contentMatch = note.content?.toLowerCase().includes(q);
-        const tagMatch = note.tags?.some((t) => t.toLowerCase().includes(q));
+        const tagMatch = normalizeTags(note.tags).some((t) => t.toLowerCase().includes(q));
         return titleMatch || contentMatch || tagMatch;
       }
 

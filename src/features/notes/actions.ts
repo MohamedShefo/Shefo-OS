@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { normalizeTags } from '@/lib/utils';
 import { Note, NoteBlock, NoteLink } from '@/types/database';
 
 export interface CreateNotePayload {
@@ -213,9 +214,9 @@ export async function getNoteTags(limit = 100): Promise<string[]> {
       return [];
     }
     const set = new Set<string>();
-    for (const row of (data as Array<{ tags: string[] | null }>) || []) {
-      for (const t of row.tags ?? []) {
-        const tag = t.trim().toLowerCase();
+    for (const row of (data as Array<{ tags: string[] | string | null }>) || []) {
+      for (const t of normalizeTags(row.tags)) {
+        const tag = t.toLowerCase();
         if (tag) set.add(tag);
         if (set.size >= limit) break;
       }
@@ -256,7 +257,7 @@ export async function getRelatedNotes(noteId: string, limit = 6): Promise<Note[]
       return [];
     }
     const candidates = (data as Note[]) || [];
-    const sourceTags = new Set((source.tags ?? []).map((t) => t.trim().toLowerCase()));
+    const sourceTags = new Set(normalizeTags(source.tags).map((t) => t.toLowerCase()));
     const [outgoing, incoming] = await Promise.all([
       getOutgoingNoteLinks(noteId),
       getIncomingNoteLinks(noteId),
@@ -266,7 +267,9 @@ export async function getRelatedNotes(noteId: string, limit = 6): Promise<Note[]
     const scored = candidates.map((n) => {
       let score = 0;
       if (source.project_id && n.project_id === source.project_id) score += 3;
-      const shared = (n.tags ?? []).filter((t) => sourceTags.has(t.trim().toLowerCase())).length;
+      const shared = normalizeTags(n.tags).filter((t) =>
+        sourceTags.has(t.toLowerCase())
+      ).length;
       score += Math.min(2, shared);
       if (linkedIds.has(n.id)) score += 4;
       if (n.is_pinned) score += 1;

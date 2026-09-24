@@ -12,6 +12,7 @@ import type {
   Task,
   WorkExperience,
 } from '@/types/database';
+import { normalizeTags } from '@/lib/utils';
 
 /**
  * Export formatters (pure functions — no I/O, no framework).
@@ -60,7 +61,7 @@ export function noteToMarkdown(note: Note & { blocks: NoteBlock[]; linkedTitles:
   lines.push(`id: ${note.id}`);
   lines.push(`title: ${yamlScalar(note.title)}`);
   lines.push(`type: ${yamlScalar(note.note_type ?? 'note')}`);
-  lines.push(`tags: [${(note.tags ?? []).map((t) => JSON.stringify(t)).join(', ')}]`);
+  lines.push(`tags: [${normalizeTags(note.tags).map((t) => JSON.stringify(t)).join(', ')}]`);
   lines.push(`created: ${note.created_at}`);
   lines.push(`updated: ${note.updated_at}`);
   lines.push('---', '');

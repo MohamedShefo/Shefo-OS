@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { updateNote } from '../actions';
 import { Note, Project, WorkExperience } from '@/types/database';
+import { normalizeTags } from '@/lib/utils';
 import { NOTE_TYPES } from './note-card';
 import { Button } from '@/components/ui/button';
 
@@ -15,8 +16,9 @@ interface NoteMetaEditorProps {
 }
 
 export function NoteMetaEditor({ note, projects, works, projectsMap, worksMap }: NoteMetaEditorProps) {
+  const initialTags = normalizeTags(note.tags).join(', ');
   const [title, setTitle] = useState(note.title);
-  const [tagsInput, setTagsInput] = useState((note.tags ?? []).join(', '));
+  const [tagsInput, setTagsInput] = useState(initialTags);
   const [projectId, setProjectId] = useState(note.project_id || '');
   const [workId, setWorkId] = useState(note.work_experience_id || '');
   const [noteType, setNoteType] = useState(note.note_type || 'note');
@@ -26,7 +28,7 @@ export function NoteMetaEditor({ note, projects, works, projectsMap, worksMap }:
 
   const dirty =
     title !== note.title ||
-    tagsInput !== (note.tags ?? []).join(', ') ||
+    tagsInput !== initialTags ||
     projectId !== (note.project_id || '') ||
     workId !== (note.work_experience_id || '') ||
     noteType !== (note.note_type || 'note');

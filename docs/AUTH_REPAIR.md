@@ -1,6 +1,19 @@
-# Supabase Auth Repair — one-time superuser procedure (NOT applied)
+# Supabase Auth Repair — procedure NOT applied; real logins work
 
-## Status
+## Status (updated 2026-09-24)
+
+**Procedure STILL NOT applied** — but live evidence now shows real,
+GoTrue-created accounts CAN log in: `security_events` records repeated
+`auth.login_success` rows for the real user on 2026-09-24 (16:03, 17:51,
+17:55×3), and manual Incognito testing confirms working login. The login-500s
+observed from this environment affect only hand-crafted `auth.users` rows
+(missing some GoTrue-managed attribute), NOT real accounts. The original
+diagnosis (policy-less RLS vs non-bypass role) therefore does not fully
+explain production behavior — treat it as one hypothesis among others, and do
+not apply schema changes on its basis alone without re-verification.
+**Original content below is preserved for reference.**
+
+## Original Status (superseded in part — see above)
 
 **NOT APPLIED.** Requires a PostgreSQL superuser (Supabase Dashboard → SQL editor).
 The CLI temp role is not the owner of the `auth.*` tables, so this cannot run

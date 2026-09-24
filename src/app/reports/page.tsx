@@ -14,7 +14,7 @@ export const metadata = {
 };
 
 interface ReportsPageProps {
-  searchParams: Promise<{ days?: string }>;
+  searchParams: Promise<{ days?: string; from?: string; to?: string }>;
 }
 
 const PRESETS = [7, 14, 30, 90] as const;
@@ -42,22 +42,28 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
 
   const params = await searchParams;
   const parsed = Number(params.days);
+  const customValid =
+    /^\d{4}-\d{2}-\d{2}$/.test(params.from ?? '') &&
+    /^\d{4}-\d{2}-\d{2}$/.test(params.to ?? '');
+  const useCustom = customValid && !Number.isFinite(parsed);
   const days = (PRESETS as readonly number[]).includes(parsed) ? parsed : 30;
-  const { from, to } = rangeFor(days);
+  const { from, to } = useCustom
+    ? { from: params.from as string, to: params.to as string }
+    : rangeFor(days);
   const report = await getReport(from, to);
 
   return (
     <AppShell userEmail={user.email}>
       <PageHeader
         title="Reports"
-        description={report ? `Last ${days} days · ${from} → ${to}` : 'Pick a period.'}
+        description={report ? `${useCustom ? 'Custom period' : `Last ${days} days`} · ${from} → ${to}` : 'Pick a period.'}
         actions={
           <>
             <div className="flex items-center gap-1">
               {PRESETS.map((d) => (
                 <Link key={d} href={`/reports?days=${d}`}>
                   <Button
-                    variant={d === days ? 'default' : 'outline'}
+                    variant={!useCustom && d === days ? 'default' : 'outline'}
                     size="sm"
                     className="h-8 px-2.5"
                   >
@@ -74,6 +80,34 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
           </>
         }
       />
+
+      <section>
+        <form action="/reports" method="get" className="flex flex-wrap items-center gap-2">
+          <input
+            type="date"
+            name="from"
+            defaultValue={useCustom ? from : ''}
+            required
+            aria-label="Custom range start"
+            className="rounded-md border border-input bg-background px-2 py-1.5 text-xs outline-none focus:ring-2 focus:ring-ring/20"
+          />
+          <span className="text-xs text-muted-foreground">→</span>
+          <input
+            type="date"
+            name="to"
+            defaultValue={useCustom ? to : ''}
+            required
+            aria-label="Custom range end"
+            className="rounded-md border border-input bg-background px-2 py-1.5 text-xs outline-none focus:ring-2 focus:ring-ring/20"
+          />
+          <Button type="submit" variant="outline" size="sm" className="h-8">
+            Custom Range
+          </Button>
+        </form>
+        <p className="mt-1.5 px-1 text-[11px] text-muted-foreground">
+          Custom ranges are capped at 93 days by the reporting backend.
+        </p>
+      </section>
 
       {!report ? (
         <p className="text-xs text-destructive">Could not build this report. Try again.</p>

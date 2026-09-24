@@ -74,9 +74,10 @@ export async function getWorkspaceActivity(workspaceId: string): Promise<MemberA
   try {
     const ctx = await authedUser();
     if (!ctx) return [];
+    // NOTE: same as memberships — no FK to profiles, so resolve names separately.
     const { data, error } = await ctx.supabase
       .from('workspace_activity')
-      .select('*, profiles(display_name)')
+      .select('*')
       .eq('workspace_id', workspaceId)
       .order('last_seen_at', { ascending: false })
       .limit(50);
@@ -84,29 +85,38 @@ export async function getWorkspaceActivity(workspaceId: string): Promise<MemberA
       console.error('Error fetching workspace activity:', error.message || error);
       return [];
     }
-    return (
-      (
-        data as Array<
-          WorkspaceActivity & { profiles: { display_name: string | null } | null }
-        >
-      )?.map((a) => ({
-        id: a.id,
-        workspace_id: a.workspace_id,
-        user_id: a.user_id,
-        last_seen_at: a.last_seen_at,
-        // Location is only exposed when the member opted in.
-        city_label: a.share_location ? a.city_label : null,
-        device_label: a.device_label,
-        share_location: a.share_location,
-        latitude: a.share_location ? a.latitude : null,
-        longitude: a.share_location ? a.longitude : null,
-        location_precision: a.share_location ? a.location_precision : null,
-        location_consent_at: a.location_consent_at,
-        location_updated_at: a.share_location ? a.location_updated_at : null,
-        updated_at: a.updated_at,
-        displayName: a.profiles?.display_name ?? null,
-      })) || []
-    );
+    const rows = (data as WorkspaceActivity[]) || [];
+    const ids = [...new Set(rows.map((a) => a.user_id))];
+    let names: Record<string, string | null> = {};
+    if (ids.length > 0) {
+      const { data: profiles } = await ctx.supabase
+        .from('profiles')
+        .select('id, display_name')
+        .in('id', ids);
+      names = Object.fromEntries(
+        ((profiles as Array<{ id: string; display_name: string | null }>) || []).map((p) => [
+          p.id,
+          p.display_name,
+        ])
+      );
+    }
+    return rows.map((a) => ({
+      id: a.id,
+      workspace_id: a.workspace_id,
+      user_id: a.user_id,
+      last_seen_at: a.last_seen_at,
+      // Location is only exposed when the member opted in.
+      city_label: a.share_location ? a.city_label : null,
+      device_label: a.device_label,
+      share_location: a.share_location,
+      latitude: a.share_location ? a.latitude : null,
+      longitude: a.share_location ? a.longitude : null,
+      location_precision: a.share_location ? a.location_precision : null,
+      location_consent_at: a.location_consent_at,
+      location_updated_at: a.share_location ? a.location_updated_at : null,
+      updated_at: a.updated_at,
+      displayName: names[a.user_id] ?? null,
+    }));
   } catch (err) {
     console.error('Unexpected error in getWorkspaceActivity:', err);
     return [];

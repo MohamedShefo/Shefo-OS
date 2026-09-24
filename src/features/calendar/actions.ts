@@ -24,18 +24,24 @@ export interface CreateEventPayload {
 
 export type UpdateEventPayload = CreateEventPayload;
 
-export async function getEvents(from: string, to: string): Promise<CalendarEvent[]> {
+export async function getEvents(from: string, to: string, query?: string): Promise<CalendarEvent[]> {
   try {
     if (!/^\d{4}-\d{2}-\d{2}/.test(from) || !/^\d{4}-\d{2}-\d{2}/.test(to)) return [];
     const ctx = await authedUser();
     if (!ctx) return [];
-    const { data, error } = await ctx.supabase
+    let q = ctx.supabase
       .from('calendar_events')
       .select('*')
       .eq('user_id', ctx.user.id)
       .is('deleted_at', null)
       .gte('starts_at', from)
-      .lte('starts_at', to)
+      .lte('starts_at', to);
+    const term = query?.trim();
+    if (term) {
+      const pattern = `%${term.replace(/[%_\\]/g, '\\$&').replace(/[,()]/g, '')}%`;
+      q = q.or(`title.ilike.${pattern},description.ilike.${pattern}`);
+    }
+    const { data, error } = await q
       .order('starts_at', { ascending: true })
       .limit(200);
     if (error) {

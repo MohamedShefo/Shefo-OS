@@ -6,6 +6,7 @@ import { getUpcomingEvents } from '@/features/calendar/actions';
 import { getUnreadCount, getRecentNotifications } from '@/features/notifications/actions';
 import { getUnprocessedCaptures } from '@/features/captures/actions';
 import { getNotes } from '@/features/notes/actions';
+import { getHabits } from '@/features/habits/actions';
 import { getJournalEntry } from '@/features/journal/actions';
 import { todayISO } from '@/lib/date';
 import { Button } from '@/components/ui/button';
@@ -29,7 +30,7 @@ export default async function TodayPage() {
   }
 
   const today = todayISO();
-  const [tasks, events, unread, notifications, captures, notes, journal] = await Promise.all([
+  const [tasks, events, unread, notifications, captures, notes, journal, habits] = await Promise.all([
     getTasks(),
     getUpcomingEvents(2, 10),
     getUnreadCount(),
@@ -37,7 +38,10 @@ export default async function TodayPage() {
     getUnprocessedCaptures(),
     getNotes(),
     getJournalEntry(today),
+    getHabits(),
   ]);
+
+  const pendingHabits = habits.filter((h) => h.is_active && !h.doneToday);
 
   const overdue = tasks.filter((t) => t.due_date && t.due_date.slice(0, 10) < today && t.status !== 'done');
   const dueToday = tasks.filter((t) => t.due_date && t.due_date.slice(0, 10) === today && t.status !== 'done');
@@ -197,6 +201,28 @@ export default async function TodayPage() {
               Notes →
             </Link>
           </span>
+        </section>
+
+        <section className="rounded-xl border border-border bg-card p-5 shadow-xs space-y-2">
+          <h2 className="text-sm font-semibold tracking-tight text-foreground flex items-center gap-2">
+            🔁 Habits Left Today
+            <Badge variant="secondary">{pendingHabits.length}</Badge>
+          </h2>
+          {pendingHabits.length === 0 ? (
+            <p className="text-xs text-muted-foreground">All habits done — or none active.</p>
+          ) : (
+            pendingHabits.slice(0, 5).map((h) => (
+              <p key={h.id} className="text-xs text-foreground truncate">
+                ○ {h.name}
+                {h.streak > 0 && (
+                  <span className="text-muted-foreground"> · 🔥 {h.streak}</span>
+                )}
+              </p>
+            ))
+          )}
+          <Link href="/habits" className="block text-xs text-primary hover:underline font-medium">
+            Check off habits →
+          </Link>
         </section>
 
         <section className="rounded-xl border border-border bg-card p-5 shadow-xs space-y-2 md:col-span-2">

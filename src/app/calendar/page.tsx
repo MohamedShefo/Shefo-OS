@@ -14,7 +14,7 @@ export const metadata = {
 };
 
 interface CalendarPageProps {
-  searchParams: Promise<{ month?: string }>;
+  searchParams: Promise<{ month?: string; q?: string }>;
 }
 
 function monthRange(month: string): { from: string; to: string; label: string } {
@@ -48,8 +48,9 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
   const now = new Date();
   const defaultMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   const month = /^\d{4}-\d{2}$/.test(params.month ?? '') ? (params.month as string) : defaultMonth;
+  const searchQuery = (params.q ?? '').trim();
   const { from, to, label } = monthRange(month);
-  const events = await getEvents(from, to);
+  const events = await getEvents(from, to, searchQuery || undefined);
 
   const daysWithEvents = new Set(events.map((e) => new Date(e.starts_at).toISOString().slice(0, 10)));
   const [y, m] = month.split('-').map(Number);
@@ -120,10 +121,34 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
       </section>
 
       <section className="space-y-3">
-        <h2 className="flex items-center gap-2 px-1 text-sm font-semibold tracking-tight text-foreground">
-          Events
-          <Badge variant="secondary">{events.length}</Badge>
-        </h2>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <h2 className="flex items-center gap-2 px-1 text-sm font-semibold tracking-tight text-foreground">
+            Events
+            <Badge variant="secondary">{events.length}</Badge>
+          </h2>
+          <form action="/calendar" method="get" className="flex items-center gap-2">
+            <input type="hidden" name="month" value={month} />
+            <input
+              type="search"
+              name="q"
+              defaultValue={searchQuery}
+              placeholder="Search events…"
+              aria-label="Search events"
+              className="rounded-md border border-input bg-background px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-ring/20 w-full sm:w-56"
+            />
+            <Button type="submit" variant="outline" size="sm" className="h-8 shrink-0">
+              Search
+            </Button>
+            {searchQuery && (
+              <Link
+                href={`/calendar?month=${month}`}
+                className="text-[11px] text-muted-foreground hover:text-foreground shrink-0"
+              >
+                Clear
+              </Link>
+            )}
+          </form>
+        </div>
         <EventList events={events} />
       </section>
     </AppShell>

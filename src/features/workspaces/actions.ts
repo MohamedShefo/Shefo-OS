@@ -169,27 +169,41 @@ export async function getWorkspaceMembers(workspaceId: string): Promise<Workspac
   try {
     const ctx = await authedUser();
     if (!ctx) return [];
+    // NOTE: no FK exists between memberships.user_id and profiles.id (profiles
+    // are app-provisioned lazily), so PostgREST cannot embed profiles here.
+    // Display names resolve via a second owner-scoped query instead.
     const { data, error } = await ctx.supabase
       .from('memberships')
-      .select('*, profiles(display_name)')
+      .select('*')
       .eq('workspace_id', workspaceId)
       .order('joined_at', { ascending: true });
     if (error) {
       console.error('Error fetching members:', error.message || error);
       return [];
     }
-    return (
-      ((data as Array<Membership & { profiles: { display_name: string | null } | null }>) || []).map(
-        (m) => ({
-          id: m.id,
-          workspace_id: m.workspace_id,
-          user_id: m.user_id,
-          role: m.role,
-          joined_at: m.joined_at,
-          displayName: m.profiles?.display_name ?? null,
-        })
-      ) || []
-    );
+    const rows = (data as Membership[]) || [];
+    const ids = [...new Set(rows.map((m) => m.user_id))];
+    let names: Record<string, string | null> = {};
+    if (ids.length > 0) {
+      const { data: profiles } = await ctx.supabase
+        .from('profiles')
+        .select('id, display_name')
+        .in('id', ids);
+      names = Object.fromEntries(
+        ((profiles as Array<{ id: string; display_name: string | null }>) || []).map((p) => [
+          p.id,
+          p.display_name,
+        ])
+      );
+    }
+    return rows.map((m) => ({
+      id: m.id,
+      workspace_id: m.workspace_id,
+      user_id: m.user_id,
+      role: m.role,
+      joined_at: m.joined_at,
+      displayName: names[m.user_id] ?? null,
+    }));
   } catch (err) {
     console.error('Unexpected error in getWorkspaceMembers:', err);
     return [];

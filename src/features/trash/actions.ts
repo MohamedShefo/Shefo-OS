@@ -121,6 +121,10 @@ export async function restoreItem(
     }
 
     revalidatePath('/trash');
+    revalidatePath('/notes');
+    revalidatePath('/projects');
+    revalidatePath('/tasks');
+    revalidatePath('/capture');
     revalidatePath('/');
     return { success: true };
   } catch (err) {
@@ -157,6 +161,11 @@ export async function permanentlyDeleteItem(
     }
 
     revalidatePath('/trash');
+    revalidatePath('/notes');
+    revalidatePath('/projects');
+    revalidatePath('/tasks');
+    revalidatePath('/capture');
+    revalidatePath('/');
     return { success: true };
   } catch (err) {
     console.error('Unexpected error in permanentlyDeleteItem:', err);

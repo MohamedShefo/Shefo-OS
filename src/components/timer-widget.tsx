@@ -32,7 +32,7 @@ export function TimerWidget() {
         aria-label="Open focus timer"
         title="Focus timer"
         suppressHydrationWarning
-        className="fixed bottom-4 start-4 z-[60] flex h-11 items-center gap-2 rounded-full border border-border bg-card px-3.5 text-xs font-medium text-muted-foreground shadow-md transition-all hover:text-foreground hover:shadow-lg"
+        className="fixed bottom-4 start-4 z-40 flex h-11 items-center gap-2 rounded-full border border-border bg-card px-3.5 text-xs font-medium text-muted-foreground shadow-md transition-all hover:text-foreground hover:shadow-lg"
       >
         <span aria-hidden="true">⏱</span>
         <span className="tabular-nums">{formatTimer(remainingMs)}</span>
@@ -45,7 +45,7 @@ export function TimerWidget() {
 
   return (
     <div
-      className="fixed bottom-4 start-4 z-[60] w-[calc(100vw-2rem)] max-w-[260px] rounded-xl border border-border bg-card p-4 shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-200"
+      className="fixed bottom-4 start-4 z-40 w-[calc(100vw-2rem)] max-w-[260px] rounded-xl border border-border bg-card p-4 shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-200"
       suppressHydrationWarning
     >
       <div className="flex items-center justify-between">

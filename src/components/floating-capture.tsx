@@ -70,7 +70,7 @@ export function FloatingCapture() {
         aria-label="Show quick capture"
         title="Show quick capture"
         suppressHydrationWarning
-        className="fixed bottom-4 end-4 z-[60] flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-xs text-muted-foreground shadow-md transition-all hover:text-foreground hover:shadow-lg"
+        className="fixed bottom-4 end-4 z-40 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-xs text-muted-foreground shadow-md transition-all hover:text-foreground hover:shadow-lg"
       >
         ⚡
       </button>
@@ -79,7 +79,7 @@ export function FloatingCapture() {
 
   return (
     <div
-      className="fixed bottom-4 end-4 z-[60] flex flex-col items-end gap-2"
+      className="fixed bottom-4 end-4 z-40 flex flex-col items-end gap-2"
       suppressHydrationWarning
     >
       <div

@@ -7,6 +7,7 @@ import { getWorkExperiences } from '@/features/work/actions';
 import { getCurrentWorkspaceId } from '@/features/workspaces/actions';
 import { NoteList } from '@/features/notes/components/note-list';
 import { CreateNoteDialog } from '@/features/notes/components/create-note-dialog';
+import { NoteGraph } from '@/features/notes/components/note-graph';
 import { Button } from '@/components/ui/button';
 import { AppShell } from '@/components/shell/app-shell';
 import { PageHeader } from '@/components/common/page-header';
@@ -34,6 +35,16 @@ export default async function NotesPage() {
     getNoteTags(),
   ]);
 
+  const graphNeighbors = [...notes]
+    .sort((a, b) => b.updated_at.localeCompare(a.updated_at))
+    .slice(0, 8)
+    .map((n) => ({
+      key: `note-${n.id}`,
+      label: n.title,
+      kind: 'note' as const,
+      href: `/notes/${n.id}`,
+    }));
+
   return (
     <AppShell userEmail={user.email}>
       {/* Header */}
@@ -52,10 +63,18 @@ export default async function NotesPage() {
         }
       />
 
-      {/* Note List / Grid */}
-      <section>
-        <NoteList initialNotes={notes} projects={projects} works={works} tags={tags} />
-      </section>
+      {/* Note List / Grid + Knowledge Graph split (stacks on mobile) */}
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-4 items-start">
+        <section className="min-w-0">
+          <NoteList initialNotes={notes} projects={projects} works={works} tags={tags} />
+        </section>
+        <aside aria-label="Knowledge graph" className="min-w-0 lg:sticky lg:top-4 space-y-2">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1">
+            Graph
+          </h2>
+          <NoteGraph centerLabel="Notes" neighbors={graphNeighbors} />
+        </aside>
+      </div>
     </AppShell>
   );
 }

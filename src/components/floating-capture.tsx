@@ -70,7 +70,7 @@ export function FloatingCapture() {
         aria-label="Show quick capture"
         title="Show quick capture"
         suppressHydrationWarning
-        className="fixed bottom-4 end-4 z-40 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-xs text-muted-foreground shadow-md transition-all hover:text-foreground hover:shadow-lg"
+        className="pointer-events-auto fixed bottom-4 end-4 z-40 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-xs text-muted-foreground shadow-md transition-all hover:text-foreground hover:shadow-lg"
       >
         ⚡
       </button>
@@ -79,12 +79,12 @@ export function FloatingCapture() {
 
   return (
     <div
-      className="fixed bottom-4 end-4 z-40 flex flex-col items-end gap-2"
+      className="pointer-events-none fixed bottom-4 end-4 z-40 flex flex-col items-end gap-2"
       suppressHydrationWarning
     >
       <div
         className={`w-[calc(100vw-2rem)] max-w-xs origin-bottom-end overflow-hidden rounded-xl border border-border bg-card shadow-lg transition-all duration-200 ${
-          open ? 'scale-100 opacity-100' : 'pointer-events-none scale-95 opacity-0'
+          open ? 'pointer-events-auto scale-100 opacity-100' : 'pointer-events-none scale-95 opacity-0'
         }`}
         aria-hidden={!open}
       >
@@ -128,7 +128,7 @@ export function FloatingCapture() {
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? 'Close quick capture' : 'Open quick capture'}
         aria-expanded={open}
-        className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-lg text-primary-foreground shadow-lg transition-all hover:scale-105 hover:shadow-xl active:scale-95"
+        className="pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary text-lg text-primary-foreground shadow-lg transition-all hover:scale-105 hover:shadow-xl active:scale-95"
       >
         {open ? '✕' : '⚡'}
       </button>

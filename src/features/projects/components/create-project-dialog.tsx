@@ -1,20 +1,23 @@
 'use client';
 
 import { useState, useTransition, FormEvent } from 'react';
-import { createProject } from '../actions';
-import { ProjectStatus } from '@/types/database';
+import { createProject, updateProject } from '../actions';
+import { Project, ProjectStatus } from '@/types/database';
 import { Button } from '@/components/ui/button';
 
 interface CreateProjectDialogProps {
   workspaceId?: string | null;
+  project?: Project | null;
+  buttonLabel?: string;
+  dialogTitle?: string;
   onSuccess?: () => void;
 }
 
-export function CreateProjectDialog({ workspaceId = null, onSuccess }: CreateProjectDialogProps) {
+export function CreateProjectDialog({ workspaceId = null, project = null, buttonLabel, dialogTitle, onSuccess }: CreateProjectDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [status, setStatus] = useState<ProjectStatus>('active');
+  const [name, setName] = useState(project?.name ?? '');
+  const [description, setDescription] = useState(project?.description ?? '');
+  const [status, setStatus] = useState<ProjectStatus>(project?.status ?? 'active');
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -23,30 +26,36 @@ export function CreateProjectDialog({ workspaceId = null, onSuccess }: CreatePro
     if (!name.trim() || isPending) return;
     setError(null);
 
+    const payload = {
+      name,
+      description,
+      status,
+      workspace_id: workspaceId,
+    };
+
     startTransition(async () => {
-      const res = await createProject({
-        name,
-        description,
-        status,
-        workspace_id: workspaceId,
-      });
+      const res = project
+        ? await updateProject(project.id, payload)
+        : await createProject(payload);
 
       if (res.success) {
-        setName('');
-        setDescription('');
-        setStatus('active');
+        if (!project) {
+          setName('');
+          setDescription('');
+          setStatus('active');
+        }
         setIsOpen(false);
         if (onSuccess) onSuccess();
       } else {
-        setError(res.error || 'Failed to create project');
+        setError(res.error || 'Failed to save project');
       }
     });
   };
 
   if (!isOpen) {
     return (
-      <Button onClick={() => setIsOpen(true)} className="font-medium">
-        + New Project
+      <Button onClick={() => setIsOpen(true)} className="font-medium" size={project ? 'sm' : 'default'}>
+        {buttonLabel ?? (project ? 'Edit' : '+ New Project')}
       </Button>
     );
   }
@@ -55,7 +64,9 @@ export function CreateProjectDialog({ workspaceId = null, onSuccess }: CreatePro
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
       <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-lg space-y-4 animate-in fade-in zoom-in-95 duration-150">
         <div className="flex items-center justify-between border-b border-border pb-3">
-          <h3 className="text-lg font-semibold tracking-tight">Create Project</h3>
+          <h3 className="text-lg font-semibold tracking-tight">
+            {dialogTitle ?? (project ? 'Edit Project' : 'Create Project')}
+          </h3>
           <button
             onClick={() => setIsOpen(false)}
             className="text-muted-foreground hover:text-foreground text-sm font-bold"
@@ -116,7 +127,7 @@ export function CreateProjectDialog({ workspaceId = null, onSuccess }: CreatePro
               Cancel
             </Button>
             <Button type="submit" disabled={!name.trim() || isPending}>
-              {isPending ? 'Creating...' : 'Create Project'}
+              {isPending ? 'Saving…' : project ? 'Save Changes' : 'Create Project'}
             </Button>
           </div>
         </form>

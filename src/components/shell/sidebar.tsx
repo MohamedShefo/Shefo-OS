@@ -120,7 +120,7 @@ export function Sidebar({ userEmail, workspaces = [], currentWorkspaceId = null,
               </div>
             </div>
             <span className="flex items-center gap-1 shrink-0">
-              <NotificationBell initialUnread={unreadCount} direction="up" />
+              <NotificationBell initialUnread={unreadCount} />
               <ThemeToggle />
             </span>
           </div>

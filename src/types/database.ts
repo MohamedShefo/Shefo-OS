@@ -208,6 +208,15 @@ export interface FinanceTransaction {
   deleted_at: string | null;
 }
 
+export interface FinanceBalances {
+  id: string;
+  user_id: string;
+  available: number;
+  frozen: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export type DashboardMode = 'normal' | 'focus';
 
 export interface DashboardState {

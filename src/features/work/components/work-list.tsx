@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { WorkExperience } from '@/types/database';
 import { deleteWorkExperience } from '../actions';
+import { WorkDialog } from './work-dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/common/empty-state';
@@ -91,7 +92,8 @@ export function WorkList({ initialWork }: WorkListProps) {
                   </p>
                 )}
               </div>
-              <div className="flex items-center justify-end pt-4 mt-4 border-t border-border/50">
+              <div className="flex items-center justify-end gap-1 pt-4 mt-4 border-t border-border/50">
+                <WorkDialog work={w} buttonLabel="Edit" dialogTitle="Edit Workplace" />
                 <Button
                   variant="ghost"
                   size="sm"

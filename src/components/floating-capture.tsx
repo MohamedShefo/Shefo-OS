@@ -2,12 +2,16 @@
 
 import { useState, useTransition, KeyboardEvent } from 'react';
 import { createCapture } from '@/features/captures/actions';
+import { useDraggable } from '@/lib/use-draggable';
 import { Button } from '@/components/ui/button';
 
 const VISIBILITY_KEY = 'shefo:floating-capture-visible';
+const POSITION_KEY = 'shefo:floating-capture-pos';
 
 export function FloatingCapture() {
   const [open, setOpen] = useState(false);
+  const { position, dragProps } = useDraggable(POSITION_KEY);
+  const posStyle = position ? { left: position.x, top: position.y } : undefined;
   // Lazy init keeps this SSR-safe (no localStorage on the server).
   const [visible, setVisible] = useState(() => {
     if (typeof window === 'undefined') return true;
@@ -70,7 +74,11 @@ export function FloatingCapture() {
         aria-label="Show quick capture"
         title="Show quick capture"
         suppressHydrationWarning
-        className="pointer-events-auto fixed bottom-4 end-4 z-40 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-xs text-muted-foreground shadow-md transition-all hover:text-foreground hover:shadow-lg"
+        style={posStyle}
+        {...dragProps}
+        className={`pointer-events-auto fixed z-40 flex h-9 w-9 touch-none items-center justify-center rounded-full border border-border bg-card text-xs text-muted-foreground shadow-md transition-all hover:text-foreground hover:shadow-lg ${
+          position ? 'cursor-grab active:cursor-grabbing' : 'bottom-4 end-4'
+        }`}
       >
         ⚡
       </button>
@@ -79,8 +87,10 @@ export function FloatingCapture() {
 
   return (
     <div
-      className="pointer-events-none fixed bottom-4 end-4 z-40 flex flex-col items-end gap-2"
+      className={`pointer-events-none fixed z-40 flex flex-col items-end gap-2 ${position ? '' : 'bottom-4 end-4'}`}
+      style={posStyle}
       suppressHydrationWarning
+      {...dragProps}
     >
       <div
         className={`w-[calc(100vw-2rem)] max-w-xs origin-bottom-end overflow-hidden rounded-xl border border-border bg-card shadow-lg transition-all duration-200 ${

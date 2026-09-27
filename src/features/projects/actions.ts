@@ -91,6 +91,51 @@ export async function createProject(
   }
 }
 
+export async function updateProject(
+  id: string,
+  payload: Partial<CreateProjectPayload>
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const updateData: Record<string, unknown> = {};
+    if (payload.name !== undefined) {
+      const name = payload.name.trim();
+      if (!name) return { success: false, error: 'Project name is required' };
+      updateData.name = name;
+    }
+    if (payload.description !== undefined) updateData.description = payload.description?.trim() || null;
+    if (payload.status !== undefined) updateData.status = payload.status;
+    if (payload.workspace_id !== undefined) updateData.workspace_id = payload.workspace_id || null;
+    if (Object.keys(updateData).length === 0) return { success: true };
+
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, error: 'User is not authenticated' };
+    }
+
+    const { error } = await supabase
+      .from('projects')
+      .update(updateData)
+      .eq('id', id)
+      .eq('user_id', user.id);
+    if (error) {
+      console.error('Error updating project:', error);
+      return { success: false, error: error.message };
+    }
+    revalidatePath('/projects');
+    revalidatePath(`/projects/${id}`);
+    revalidatePath('/');
+    return { success: true };
+  } catch (err) {
+    console.error('Unexpected error in updateProject:', err);
+    return { success: false, error: 'An unexpected error occurred' };
+  }
+}
+
 export async function updateProjectStatus(
   id: string,
   status: ProjectStatus

@@ -11,7 +11,7 @@ import {
 import type { Notification } from '@/types/database';
 import { Button } from '@/components/ui/button';
 
-export function NotificationBell({ initialUnread, direction = 'down' }: { initialUnread: number; direction?: 'up' | 'down' }) {
+export function NotificationBell({ initialUnread }: { initialUnread: number }) {
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<Notification[] | null>(null);
   const [unread, setUnread] = useState(initialUnread);
@@ -84,7 +84,8 @@ export function NotificationBell({ initialUnread, direction = 'down' }: { initia
       {open && (
         <>
           <div className="fixed inset-0 z-[70]" onClick={() => setOpen(false)} aria-hidden="true" />
-          <div className={`absolute end-0 z-[71] w-72 max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-card p-3 shadow-lg animate-in fade-in zoom-in-95 duration-150 ${direction === 'up' ? 'bottom-10' : 'top-10'}`}>
+          <div className="fixed inset-0 z-[71] flex items-center justify-center p-4">
+            <div className="w-full max-w-sm rounded-xl border border-border bg-card p-3 shadow-lg animate-in fade-in zoom-in-95 duration-150 max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between px-1 pb-2">
               <p className="text-xs font-semibold text-foreground">Notifications</p>
               <Button
@@ -168,6 +169,7 @@ export function NotificationBell({ initialUnread, direction = 'down' }: { initia
                 })}
               </div>
             )}
+            </div>
           </div>
         </>
       )}

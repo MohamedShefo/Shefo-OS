@@ -110,6 +110,39 @@ export async function createHabit(payload: {
   }
 }
 
+export async function updateHabit(
+  id: string,
+  payload: { name?: string; description?: string | null; frequency?: string | null }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const updateData: Record<string, unknown> = {};
+    if (payload.name !== undefined) {
+      const name = payload.name.trim();
+      if (!name) return { success: false, error: 'Habit name is required' };
+      updateData.name = name;
+    }
+    if (payload.description !== undefined) updateData.description = payload.description?.trim() || null;
+    if (payload.frequency !== undefined) updateData.frequency = payload.frequency?.trim() || 'daily';
+    if (Object.keys(updateData).length === 0) return { success: true };
+    const ctx = await authedUser();
+    if (!ctx) return { success: false, error: 'User is not authenticated' };
+    const { error } = await ctx.supabase
+      .from('habits')
+      .update(updateData)
+      .eq('id', id)
+      .eq('user_id', ctx.user.id);
+    if (error) {
+      console.error('Error updating habit:', error);
+      return { success: false, error: error.message };
+    }
+    revalidatePath('/habits');
+    return { success: true };
+  } catch (err) {
+    console.error('Unexpected error in updateHabit:', err);
+    return { success: false, error: 'An unexpected error occurred' };
+  }
+}
+
 export async function setHabitActive(
   id: string,
   isActive: boolean

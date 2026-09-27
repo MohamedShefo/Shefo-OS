@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition, FormEvent } from 'react';
-import { createHabit, deleteHabit, setHabitActive, toggleHabitToday } from '../actions';
+import { createHabit, deleteHabit, setHabitActive, toggleHabitToday, updateHabit } from '../actions';
 import type { HabitWithProgress } from '../actions';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,21 +27,41 @@ export function HabitList({ initialHabits }: { initialHabits: HabitWithProgress[
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [isOpen, setIsOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const openCreate = () => {
+    setEditingId(null);
+    setName('');
+    setDescription('');
+    setError(null);
+    setIsOpen(true);
+  };
+
+  const openEdit = (id: string, habitName: string, habitDescription: string | null) => {
+    setEditingId(id);
+    setName(habitName);
+    setDescription(habitDescription ?? '');
+    setError(null);
+    setIsOpen(true);
+  };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!name.trim() || isPending) return;
     setError(null);
     startTransition(async () => {
-      const res = await createHabit({ name, description });
+      const res = editingId
+        ? await updateHabit(editingId, { name, description })
+        : await createHabit({ name, description });
       if (res.success) {
         setName('');
         setDescription('');
+        setEditingId(null);
         setIsOpen(false);
       } else {
-        setError(res.error || 'Failed to create habit');
+        setError(res.error || 'Failed to save habit');
       }
     });
   };
@@ -71,7 +91,7 @@ export function HabitList({ initialHabits }: { initialHabits: HabitWithProgress[
           Habits
           <Badge variant="secondary">{initialHabits.length}</Badge>
         </h2>
-        <Button size="sm" onClick={() => setIsOpen(true)} className="font-medium">
+        <Button size="sm" onClick={openCreate} className="font-medium">
           + New Habit
         </Button>
       </div>
@@ -80,7 +100,9 @@ export function HabitList({ initialHabits }: { initialHabits: HabitWithProgress[
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-lg space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between border-b border-border pb-3">
-              <h3 className="text-lg font-semibold tracking-tight">New Habit</h3>
+              <h3 className="text-lg font-semibold tracking-tight">
+                {editingId ? 'Edit Habit' : 'New Habit'}
+              </h3>
               <button
                 onClick={() => setIsOpen(false)}
                 className="text-muted-foreground hover:text-foreground text-sm font-bold"
@@ -119,7 +141,7 @@ export function HabitList({ initialHabits }: { initialHabits: HabitWithProgress[
                   Cancel
                 </Button>
                 <Button type="submit" disabled={!name.trim() || isPending}>
-                  {isPending ? 'Saving…' : 'Add Habit'}
+                  {isPending ? 'Saving…' : editingId ? 'Save Changes' : 'Add Habit'}
                 </Button>
               </div>
             </form>
@@ -168,6 +190,13 @@ export function HabitList({ initialHabits }: { initialHabits: HabitWithProgress[
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => openEdit(h.id, h.name, h.description)}
+                      disabled={isPending}
+                      className="text-[11px] text-muted-foreground hover:text-foreground px-1"
+                    >
+                      Edit
+                    </button>
                     <button
                       onClick={() => setActive(h.id, !h.is_active)}
                       disabled={isPending}

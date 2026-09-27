@@ -2,10 +2,11 @@
 
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
-import { Task, TaskPriority, TaskStatus } from '@/types/database';
+import { Capture, Note, Project, Task, TaskPriority, TaskStatus } from '@/types/database';
 import { todayISO } from '@/lib/date';
 import { completeTaskOccurrence, updateTaskStatus, deleteTask } from '../actions';
 import { createEventFromTask } from '@/features/calendar/actions';
+import { CreateTaskDialog } from './create-task-dialog';
 import { Button } from '@/components/ui/button';
 
 interface TaskItemProps {
@@ -13,6 +14,9 @@ interface TaskItemProps {
   projectName?: string | null;
   noteTitle?: string | null;
   sourceCaptureText?: string | null;
+  projects?: Project[];
+  notes?: Note[];
+  captures?: Capture[];
 }
 
 const priorityColors: Record<TaskPriority, string> = {
@@ -21,7 +25,7 @@ const priorityColors: Record<TaskPriority, string> = {
   low: 'bg-slate-500/15 text-slate-600 dark:text-slate-400 border-slate-500/30',
 };
 
-export function TaskItem({ task, projectName, noteTitle, sourceCaptureText }: TaskItemProps) {
+export function TaskItem({ task, projectName, noteTitle, sourceCaptureText, projects = [], notes = [], captures = [] }: TaskItemProps) {
   const [isPending, startTransition] = useTransition();
   const [scheduled, setScheduled] = useState(false);
 
@@ -148,6 +152,12 @@ export function TaskItem({ task, projectName, noteTitle, sourceCaptureText }: Ta
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
+        <CreateTaskDialog
+          task={task}
+          projects={projects}
+          notes={notes}
+          captures={captures}
+        />
         <select
           value={task.status}
           onChange={(e) => handleStatusChange(e.target.value as TaskStatus)}

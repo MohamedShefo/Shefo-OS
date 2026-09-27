@@ -148,6 +148,9 @@ export function TaskList({ initialTasks, projects, notes = [], captures = [] }: 
               projectName={task.project_id ? projectsMap[task.project_id] : null}
               noteTitle={task.note_id ? notesMap[task.note_id] : null}
               sourceCaptureText={task.source_capture_id ? capturesMap[task.source_capture_id] : null}
+              projects={projects}
+              notes={notes}
+              captures={captures}
             />
           ))}
         </div>

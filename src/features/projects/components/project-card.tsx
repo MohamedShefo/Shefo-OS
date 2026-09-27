@@ -5,9 +5,11 @@ import Link from 'next/link';
 import { Project, ProjectStatus } from '@/types/database';
 import { updateProjectStatus, deleteProject } from '../actions';
 import { Button } from '@/components/ui/button';
+import { CreateProjectDialog } from './create-project-dialog';
 
 interface ProjectCardProps {
   project: Project;
+  workspaceId?: string | null;
 }
 
 const statusColors: Record<ProjectStatus, string> = {
@@ -16,7 +18,7 @@ const statusColors: Record<ProjectStatus, string> = {
   archived: 'bg-muted text-muted-foreground border-border',
 };
 
-export function ProjectCard({ project }: ProjectCardProps) {
+export function ProjectCard({ project, workspaceId = null }: ProjectCardProps) {
   const [isPending, startTransition] = useTransition();
 
   const handleStatusChange = (newStatus: ProjectStatus) => {
@@ -71,6 +73,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
             <option value="archived">Archived</option>
           </select>
 
+          <CreateProjectDialog project={project} workspaceId={workspaceId} />
           <Button
             variant="ghost"
             size="sm"

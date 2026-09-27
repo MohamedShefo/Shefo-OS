@@ -49,6 +49,45 @@ export async function createCapture(
   }
 }
 
+export async function updateCapture(
+  id: string,
+  payload: { raw_text: string }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const trimmed = payload.raw_text.trim();
+    if (!trimmed) {
+      return { success: false, error: 'Capture text cannot be empty' };
+    }
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, error: 'User is not authenticated' };
+    }
+
+    const { error } = await supabase
+      .from('captures')
+      .update({ raw_text: trimmed })
+      .eq('id', id)
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Error updating capture:', error);
+      return { success: false, error: error.message };
+    }
+
+    revalidatePath('/capture');
+    revalidatePath('/');
+    return { success: true };
+  } catch (err) {
+    console.error('Unexpected error in updateCapture:', err);
+    return { success: false, error: 'An unexpected error occurred' };
+  }
+}
+
 export async function getUnprocessedCaptures(): Promise<Capture[]> {
   try {
     const supabase = await createClient();

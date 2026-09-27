@@ -2,14 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import { formatTimer, useTimer } from '@/features/timer/use-timer';
+import { useDraggable } from '@/lib/use-draggable';
 import { Button } from '@/components/ui/button';
 
 const PRESETS = [5, 15, 25, 50];
+const POSITION_KEY = 'shefo:timer-pos';
 
 export function TimerWidget() {
   const { durationMs, remainingMs, phase, start, pause, resume, reset } = useTimer(25);
   const [open, setOpen] = useState(false);
   const [minutesInput, setMinutesInput] = useState('25');
+  const { position, dragProps } = useDraggable(POSITION_KEY);
+  const posStyle = position ? { left: position.x, top: position.y } : undefined;
 
   useEffect(() => {
     if (phase === 'running') {
@@ -32,7 +36,11 @@ export function TimerWidget() {
         aria-label="Open focus timer"
         title="Focus timer"
         suppressHydrationWarning
-        className="fixed bottom-4 start-4 z-40 flex h-11 items-center gap-2 rounded-full border border-border bg-card px-3.5 text-xs font-medium text-muted-foreground shadow-md transition-all hover:text-foreground hover:shadow-lg"
+        style={posStyle}
+        {...dragProps}
+        className={`fixed z-40 flex h-11 touch-none items-center gap-2 rounded-full border border-border bg-card px-3.5 text-xs font-medium text-muted-foreground shadow-md transition-all hover:text-foreground hover:shadow-lg ${
+          position ? 'cursor-grab active:cursor-grabbing' : 'bottom-4 start-4'
+        }`}
       >
         <span aria-hidden="true">⏱</span>
         <span className="tabular-nums">{formatTimer(remainingMs)}</span>
@@ -45,8 +53,12 @@ export function TimerWidget() {
 
   return (
     <div
-      className="fixed bottom-4 start-4 z-40 w-[calc(100vw-2rem)] max-w-[260px] rounded-xl border border-border bg-card p-4 shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-200"
+      className={`fixed z-40 w-[calc(100vw-2rem)] max-w-[260px] rounded-xl border border-border bg-card p-4 shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-200 ${
+        position ? '' : 'bottom-4 start-4'
+      }`}
+      style={posStyle}
       suppressHydrationWarning
+      {...dragProps}
     >
       <div className="flex items-center justify-between">
         <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">

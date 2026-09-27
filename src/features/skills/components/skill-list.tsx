@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition, FormEvent } from 'react';
-import { createSkill, deleteSkill } from '../actions';
+import { createSkill, deleteSkill, updateSkill } from '../actions';
 import { Skill } from '@/types/database';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +20,7 @@ const inputClass =
 export function SkillList({ initialSkills, usageCounts }: SkillListProps) {
   const [search, setSearch] = useState('');
   const [isOpen, setIsOpen] = useState(false);
+  const [editing, setEditing] = useState<Skill | null>(null);
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
@@ -30,19 +31,40 @@ export function SkillList({ initialSkills, usageCounts }: SkillListProps) {
     matchesQuery([s.name, s.category, s.description], search)
   );
 
+  const openCreate = () => {
+    setEditing(null);
+    setName('');
+    setCategory('');
+    setDescription('');
+    setError(null);
+    setIsOpen(true);
+  };
+
+  const openEdit = (s: Skill) => {
+    setEditing(s);
+    setName(s.name);
+    setCategory(s.category ?? '');
+    setDescription(s.description ?? '');
+    setError(null);
+    setIsOpen(true);
+  };
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!name.trim() || isPending) return;
     setError(null);
     startTransition(async () => {
-      const res = await createSkill({ name, category, description });
+      const res = editing
+        ? await updateSkill(editing.id, { name, category, description })
+        : await createSkill({ name, category, description });
       if (res.success) {
         setName('');
         setCategory('');
         setDescription('');
+        setEditing(null);
         setIsOpen(false);
       } else {
-        setError(res.error || 'Failed to create skill');
+        setError(res.error || 'Failed to save skill');
       }
     });
   };
@@ -62,7 +84,7 @@ export function SkillList({ initialSkills, usageCounts }: SkillListProps) {
         </h2>
         <div className="flex items-center gap-2">
           <SearchField value={search} onChange={setSearch} placeholder="Search skills…" />
-          <Button size="sm" onClick={() => setIsOpen(true)} className="font-medium shrink-0">
+          <Button size="sm" onClick={openCreate} className="font-medium shrink-0">
             + New Skill
           </Button>
         </div>
@@ -72,7 +94,9 @@ export function SkillList({ initialSkills, usageCounts }: SkillListProps) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-lg space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between border-b border-border pb-3">
-              <h3 className="text-lg font-semibold tracking-tight">New Skill</h3>
+              <h3 className="text-lg font-semibold tracking-tight">
+                {editing ? 'Edit Skill' : 'New Skill'}
+              </h3>
               <button
                 onClick={() => setIsOpen(false)}
                 className="text-muted-foreground hover:text-foreground text-sm font-bold"
@@ -124,7 +148,7 @@ export function SkillList({ initialSkills, usageCounts }: SkillListProps) {
                   Cancel
                 </Button>
                 <Button type="submit" disabled={!name.trim() || isPending}>
-                  {isPending ? 'Saving…' : 'Add Skill'}
+                  {isPending ? 'Saving…' : editing ? 'Save Changes' : 'Add Skill'}
                 </Button>
               </div>
             </form>
@@ -161,15 +185,26 @@ export function SkillList({ initialSkills, usageCounts }: SkillListProps) {
                     <p className="text-xs text-muted-foreground line-clamp-2">{s.description}</p>
                   )}
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleDelete(s.id)}
-                  disabled={isPending}
-                  className="h-7 px-2 text-[11px] text-muted-foreground hover:text-destructive shrink-0"
-                >
-                  Archive
-                </Button>
+                <div className="flex items-center gap-1 shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => openEdit(s)}
+                    disabled={isPending}
+                    className="h-7 px-2 text-[11px] text-muted-foreground hover:text-foreground"
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDelete(s.id)}
+                    disabled={isPending}
+                    className="h-7 px-2 text-[11px] text-muted-foreground hover:text-destructive shrink-0"
+                  >
+                    Archive
+                  </Button>
+                </div>
               </div>
             );
           })}

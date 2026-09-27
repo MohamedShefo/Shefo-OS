@@ -1,29 +1,32 @@
 'use client';
 
 import { useState, useTransition, FormEvent } from 'react';
-import { createTask } from '../actions';
-import { Capture, Note, Project, TaskPriority, TaskStatus } from '@/types/database';
+import { createTask, updateTask } from '../actions';
+import { Capture, Note, Project, Task, TaskPriority, TaskStatus } from '@/types/database';
 import { Button } from '@/components/ui/button';
 
 interface CreateTaskDialogProps {
   projects: Project[];
   notes?: Note[];
   captures?: Capture[];
+  task?: Task | null;
+  buttonLabel?: string;
+  dialogTitle?: string;
   onSuccess?: () => void;
 }
 
-export function CreateTaskDialog({ projects, notes = [], captures = [], onSuccess }: CreateTaskDialogProps) {
+export function CreateTaskDialog({ projects, notes = [], captures = [], task = null, buttonLabel, dialogTitle, onSuccess }: CreateTaskDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [status, setStatus] = useState<TaskStatus>('todo');
-  const [priority, setPriority] = useState<TaskPriority | ''>('medium');
-  const [dueDate, setDueDate] = useState('');
-  const [reminderAt, setReminderAt] = useState('');
-  const [recurrence, setRecurrence] = useState('');
-  const [projectId, setProjectId] = useState<string>('');
-  const [noteId, setNoteId] = useState<string>('');
-  const [sourceCaptureId, setSourceCaptureId] = useState<string>('');
+  const [title, setTitle] = useState(task?.title ?? '');
+  const [description, setDescription] = useState(task?.description ?? '');
+  const [status, setStatus] = useState<TaskStatus>(task?.status ?? 'todo');
+  const [priority, setPriority] = useState<TaskPriority | ''>((task?.priority as TaskPriority | '') ?? 'medium');
+  const [dueDate, setDueDate] = useState(task?.due_date ? task.due_date.slice(0, 10) : '');
+  const [reminderAt, setReminderAt] = useState(task?.reminder_at ? task.reminder_at.slice(0, 16) : '');
+  const [recurrence, setRecurrence] = useState(task?.recurrence ?? '');
+  const [projectId, setProjectId] = useState<string>(task?.project_id ?? '');
+  const [noteId, setNoteId] = useState<string>(task?.note_id ?? '');
+  const [sourceCaptureId, setSourceCaptureId] = useState<string>(task?.source_capture_id ?? '');
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -32,43 +35,47 @@ export function CreateTaskDialog({ projects, notes = [], captures = [], onSucces
     if (!title.trim() || isPending) return;
     setError(null);
 
+    const payload = {
+      title,
+      description,
+      status,
+      priority: priority ? (priority as TaskPriority) : null,
+      due_date: dueDate ? new Date(dueDate).toISOString() : null,
+      project_id: projectId || null,
+      note_id: noteId || null,
+      source_capture_id: sourceCaptureId || null,
+      reminder_at: reminderAt ? new Date(reminderAt).toISOString() : null,
+      recurrence: recurrence || null,
+    };
+
     startTransition(async () => {
-      const res = await createTask({
-        title,
-        description,
-        status,
-        priority: priority ? (priority as TaskPriority) : null,
-        due_date: dueDate ? new Date(dueDate).toISOString() : null,
-        project_id: projectId || null,
-        note_id: noteId || null,
-        source_capture_id: sourceCaptureId || null,
-        reminder_at: reminderAt ? new Date(reminderAt).toISOString() : null,
-        recurrence: recurrence || null,
-      });
+      const res = task ? await updateTask(task.id, payload) : await createTask(payload);
 
       if (res.success) {
-        setTitle('');
-        setDescription('');
-        setStatus('todo');
-        setPriority('medium');
-        setDueDate('');
-        setReminderAt('');
-        setRecurrence('');
-        setProjectId('');
-        setNoteId('');
-        setSourceCaptureId('');
+        if (!task) {
+          setTitle('');
+          setDescription('');
+          setStatus('todo');
+          setPriority('medium');
+          setDueDate('');
+          setReminderAt('');
+          setRecurrence('');
+          setProjectId('');
+          setNoteId('');
+          setSourceCaptureId('');
+        }
         setIsOpen(false);
         if (onSuccess) onSuccess();
       } else {
-        setError(res.error || 'Failed to create task');
+        setError(res.error || 'Failed to save task');
       }
     });
   };
 
   if (!isOpen) {
     return (
-      <Button onClick={() => setIsOpen(true)} className="font-medium">
-        + New Task
+      <Button onClick={() => setIsOpen(true)} className="font-medium" size={task ? 'sm' : 'default'}>
+        {buttonLabel ?? (task ? 'Edit' : '+ New Task')}
       </Button>
     );
   }
@@ -77,7 +84,9 @@ export function CreateTaskDialog({ projects, notes = [], captures = [], onSucces
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
       <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-lg space-y-4 animate-in fade-in zoom-in-95 duration-150">
         <div className="flex items-center justify-between border-b border-border pb-3">
-          <h3 className="text-lg font-semibold tracking-tight">Create Task</h3>
+          <h3 className="text-lg font-semibold tracking-tight">
+            {dialogTitle ?? (task ? 'Edit Task' : 'Create Task')}
+          </h3>
           <button
             onClick={() => setIsOpen(false)}
             className="text-muted-foreground hover:text-foreground text-sm font-bold"
@@ -249,7 +258,7 @@ export function CreateTaskDialog({ projects, notes = [], captures = [], onSucces
               Cancel
             </Button>
             <Button type="submit" disabled={!title.trim() || isPending}>
-              {isPending ? 'Creating...' : 'Create Task'}
+              {isPending ? 'Saving…' : task ? 'Save Changes' : 'Create Task'}
             </Button>
           </div>
         </form>

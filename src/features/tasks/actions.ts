@@ -100,6 +100,58 @@ export async function createTask(
   }
 }
 
+export async function updateTask(
+  id: string,
+  payload: Partial<CreateTaskPayload>
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const title = payload.title?.trim();
+    if (payload.title !== undefined && !title) {
+      return { success: false, error: 'Task title is required' };
+    }
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, error: 'User is not authenticated' };
+    }
+
+    const updateData: Record<string, unknown> = {};
+    if (payload.title !== undefined) updateData.title = title;
+    if (payload.description !== undefined) updateData.description = payload.description?.trim() || null;
+    if (payload.status !== undefined) updateData.status = payload.status;
+    if (payload.priority !== undefined) updateData.priority = payload.priority || null;
+    if (payload.due_date !== undefined) {
+      updateData.due_date = payload.due_date ? new Date(payload.due_date).toISOString() : null;
+    }
+    if (payload.reminder_at !== undefined) {
+      updateData.reminder_at = payload.reminder_at ? new Date(payload.reminder_at).toISOString() : null;
+    }
+    if (payload.recurrence !== undefined) updateData.recurrence = payload.recurrence || null;
+    if (Object.keys(updateData).length === 0) return { success: true };
+
+    const { error } = await supabase
+      .from('tasks')
+      .update(updateData)
+      .eq('id', id)
+      .eq('user_id', user.id);
+    if (error) {
+      console.error('Error updating task:', error);
+      return { success: false, error: error.message };
+    }
+    revalidatePath('/tasks');
+    revalidatePath('/today');
+    revalidatePath('/');
+    return { success: true };
+  } catch (err) {
+    console.error('Unexpected error in updateTask:', err);
+    return { success: false, error: 'An unexpected error occurred' };
+  }
+}
+
 export async function updateTaskStatus(
   id: string,
   status: TaskStatus

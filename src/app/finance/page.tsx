@@ -1,8 +1,9 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/server';
-import { getFinanceCategories, getMonthSummary, getTransactions } from '@/features/finance/actions';
+import { getFinanceBalances, getFinanceCategories, getMonthSummary, getTransactions } from '@/features/finance/actions';
 import { FinanceTracker } from '@/features/finance/components/finance-tracker';
+import { FinanceBalancesCard } from '@/features/finance/components/finance-balances-card';
 import { BarChart, DonutChart } from '@/components/common/charts';
 import { formatMoney } from '@/lib/format';
 import { Button } from '@/components/ui/button';
@@ -39,11 +40,12 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
     return d.toISOString().slice(0, 7);
   })();
 
-  const [summary, prev, transactions, categories] = await Promise.all([
+  const [summary, prev, transactions, categories, balances] = await Promise.all([
     getMonthSummary(month),
     getMonthSummary(prevMonth),
     getTransactions({ limit: 200 }),
     getFinanceCategories(),
+    getFinanceBalances(),
   ]);
 
   const trend = [
@@ -78,6 +80,8 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
           </>
         }
       />
+
+      <FinanceBalancesCard initial={balances} />
 
       <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="p-4 rounded-xl border border-border bg-card shadow-xs space-y-1">

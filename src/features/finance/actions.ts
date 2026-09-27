@@ -2,7 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
-import type { FinanceTransaction, FinanceType } from '@/types/database';
+import type { FinanceBalances, FinanceTransaction, FinanceType } from '@/types/database';
 
 async function authedUser() {
   const supabase = await createClient();
@@ -192,6 +192,57 @@ export async function getMonthSummary(month: string): Promise<MonthSummary> {
   } catch (err) {
     console.error('Unexpected error in getMonthSummary:', err);
     return empty;
+  }
+}
+
+export async function getFinanceBalances(): Promise<FinanceBalances | null> {
+  try {
+    const ctx = await authedUser();
+    if (!ctx) return null;
+    const { data, error } = await ctx.supabase
+      .from('finance_balances')
+      .select('*')
+      .eq('user_id', ctx.user.id)
+      .maybeSingle();
+    if (error) {
+      console.error('Error fetching finance balances:', error.message || error);
+      return null;
+    }
+    return (data as FinanceBalances) || null;
+  } catch (err) {
+    console.error('Unexpected error in getFinanceBalances:', err);
+    return null;
+  }
+}
+
+export async function updateFinanceBalances(payload: {
+  available: number;
+  frozen: number;
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const available = Number(payload.available);
+    const frozen = Number(payload.frozen);
+    if (!Number.isFinite(available) || available < 0) {
+      return { success: false, error: 'Available must be a non-negative number' };
+    }
+    if (!Number.isFinite(frozen) || frozen < 0) {
+      return { success: false, error: 'Frozen must be a non-negative number' };
+    }
+    const ctx = await authedUser();
+    if (!ctx) return { success: false, error: 'User is not authenticated' };
+    const { error } = await ctx.supabase
+      .from('finance_balances')
+      .upsert({ user_id: ctx.user.id, available, frozen }, { onConflict: 'user_id' });
+    if (error) {
+      console.error('Error updating finance balances:', error);
+      return { success: false, error: error.message };
+    }
+    revalidatePath('/finance');
+    revalidatePath('/');
+    return { success: true };
+  } catch (err) {
+    console.error('Unexpected error in updateFinanceBalances:', err);
+    return { success: false, error: 'An unexpected error occurred' };
   }
 }
 

@@ -73,6 +73,39 @@ export async function createSkill(payload: {
   }
 }
 
+export async function updateSkill(
+  id: string,
+  payload: { name?: string; category?: string | null; description?: string | null }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const updateData: Record<string, unknown> = {};
+    if (payload.name !== undefined) {
+      const name = payload.name.trim();
+      if (!name) return { success: false, error: 'Skill name is required' };
+      updateData.name = name;
+    }
+    if (payload.category !== undefined) updateData.category = payload.category?.trim() || null;
+    if (payload.description !== undefined) updateData.description = payload.description?.trim() || null;
+    if (Object.keys(updateData).length === 0) return { success: true };
+    const ctx = await authedUser();
+    if (!ctx) return { success: false, error: 'User is not authenticated' };
+    const { error } = await ctx.supabase
+      .from('skills')
+      .update(updateData)
+      .eq('id', id)
+      .eq('user_id', ctx.user.id);
+    if (error) {
+      console.error('Error updating skill:', error);
+      return { success: false, error: error.message };
+    }
+    revalidatePath('/skills');
+    return { success: true };
+  } catch (err) {
+    console.error('Unexpected error in updateSkill:', err);
+    return { success: false, error: 'An unexpected error occurred' };
+  }
+}
+
 export async function deleteSkill(id: string): Promise<{ success: boolean; error?: string }> {
   try {
     const ctx = await authedUser();

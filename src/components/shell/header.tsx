@@ -9,6 +9,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { openCommandPalette } from '@/components/command-palette';
 import { WorkspaceSwitcher } from '@/features/workspaces/components/workspace-switcher';
 import { NotificationBell } from '@/features/notifications/components/notification-bell';
+import { Avatar } from '@/features/profile/components/avatar';
 import type { WorkspaceWithRole } from '@/features/workspaces/actions';
 
 interface HeaderProps {
@@ -16,9 +17,11 @@ interface HeaderProps {
   workspaces?: WorkspaceWithRole[];
   currentWorkspaceId?: string | null;
   unreadCount?: number;
+  avatarUrl?: string | null;
+  displayName?: string | null;
 }
 
-export function Header({ userEmail, workspaces = [], currentWorkspaceId = null, unreadCount = 0 }: HeaderProps) {
+export function Header({ userEmail, workspaces = [], currentWorkspaceId = null, unreadCount = 0, avatarUrl = null, displayName = null }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
@@ -84,8 +87,12 @@ export function Header({ userEmail, workspaces = [], currentWorkspaceId = null, 
 
           {userEmail && (
             <div className="px-3 pt-2 text-[11px] text-muted-foreground border-t border-border/50 space-y-2">
-              <div>
-                User: <span className="font-medium text-foreground">{userEmail}</span>
+              <div className="flex items-center gap-2">
+                <Avatar src={avatarUrl} name={displayName} email={userEmail} size="sm" />
+                <div className="min-w-0">
+                  <span className="text-muted-foreground">User: </span>
+                  <span className="font-medium text-foreground truncate">{userEmail}</span>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 {workspaces.length > 0 && (

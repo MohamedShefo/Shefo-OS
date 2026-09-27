@@ -174,7 +174,7 @@ export interface Goal {
   status: GoalStatus;
   start_date: string | null;
   target_date: string | null;
-  target_value: number | null;
+  target_value: string | null;
   current_value: number;
   created_at: string;
   updated_at: string;

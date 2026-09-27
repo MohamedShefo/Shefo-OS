@@ -34,7 +34,7 @@ export default function RootLayout({
     <html
       lang={lang}
       dir={dir}
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       style={{ colorScheme: 'dark' }}
       suppressHydrationWarning
     >

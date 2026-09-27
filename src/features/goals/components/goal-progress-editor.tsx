@@ -21,7 +21,8 @@ export function GoalProgressEditor({
   const [isPending, startTransition] = useTransition();
 
   const dirty = current !== String(goal.current_value ?? 0);
-  const measurable = goal.target_value !== null && goal.target_value !== undefined;
+  const parsedTarget = Number(goal.target_value);
+  const measurable = Number.isFinite(parsedTarget) && parsedTarget > 0;
 
   const handleSave = () => {
     const value = Number(current);

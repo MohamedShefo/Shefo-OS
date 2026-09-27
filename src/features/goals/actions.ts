@@ -20,7 +20,7 @@ export interface CreateGoalPayload {
   status?: GoalStatus;
   start_date?: string | null;
   target_date?: string | null;
-  target_value?: number | null;
+  target_value?: string | null;
   current_value?: number | null;
 }
 

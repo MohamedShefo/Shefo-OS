@@ -38,12 +38,8 @@ export function GoalDialog({ goal = null, buttonLabel, dialogTitle, onSuccess }:
     if (!title.trim() || isPending) return;
     setError(null);
 
-    const parsedTarget = targetValue.trim() === '' ? null : Number(targetValue);
+    const parsedTarget = targetValue.trim() === '' ? null : targetValue.trim();
     const parsedCurrent = currentValue.trim() === '' ? 0 : Number(currentValue);
-    if (parsedTarget !== null && (!Number.isFinite(parsedTarget) || parsedTarget <= 0)) {
-      setError('Target must be a positive number, or left empty');
-      return;
-    }
     if (!Number.isFinite(parsedCurrent) || parsedCurrent < 0) {
       setError('Current value must be a non-negative number');
       return;
@@ -171,12 +167,10 @@ export function GoalDialog({ goal = null, buttonLabel, dialogTitle, onSuccess }:
                 Target Value (Optional)
               </label>
               <input
-                type="number"
-                min={0}
-                step="any"
+                type="text"
                 value={targetValue}
                 onChange={(e) => setTargetValue(e.target.value)}
-                placeholder="e.g. 12"
+                placeholder="e.g. 12, 10 chapters, 80%"
                 disabled={isPending}
                 className={inputClass}
               />

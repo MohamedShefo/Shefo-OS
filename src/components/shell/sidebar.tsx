@@ -9,6 +9,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { openCommandPalette } from '@/components/command-palette';
 import { WorkspaceSwitcher } from '@/features/workspaces/components/workspace-switcher';
 import { NotificationBell } from '@/features/notifications/components/notification-bell';
+import { Avatar } from '@/features/profile/components/avatar';
 import type { WorkspaceWithRole } from '@/features/workspaces/actions';
 import { logout } from '@/app/auth-actions';
 
@@ -17,9 +18,11 @@ interface SidebarProps {
   workspaces?: WorkspaceWithRole[];
   currentWorkspaceId?: string | null;
   unreadCount?: number;
+  avatarUrl?: string | null;
+  displayName?: string | null;
 }
 
-export function Sidebar({ userEmail, workspaces = [], currentWorkspaceId = null, unreadCount = 0 }: SidebarProps) {
+export function Sidebar({ userEmail, workspaces = [], currentWorkspaceId = null, unreadCount = 0, avatarUrl = null, displayName = null }: SidebarProps) {
   const pathname = usePathname();
   const navRef = useRef<HTMLElement>(null);
   const [showFade, setShowFade] = useState(false);
@@ -109,12 +112,15 @@ export function Sidebar({ userEmail, workspaces = [], currentWorkspaceId = null,
       <div className="border-t border-border pt-3 mt-3 space-y-3 shrink-0">
         {userEmail && (
           <div className="px-2 flex items-center justify-between gap-2">
-            <div className="min-w-0">
-              <p className="text-[10px] text-muted-foreground uppercase font-medium">Logged in as</p>
-              <p className="text-xs font-semibold text-foreground truncate">{userEmail}</p>
+            <div className="flex items-center gap-2 min-w-0">
+              <Avatar src={avatarUrl} name={displayName} email={userEmail} size="sm" />
+              <div className="min-w-0">
+                <p className="text-[10px] text-muted-foreground uppercase font-medium">Logged in as</p>
+                <p className="text-xs font-semibold text-foreground truncate">{userEmail}</p>
+              </div>
             </div>
             <span className="flex items-center gap-1 shrink-0">
-              <NotificationBell initialUnread={unreadCount} />
+              <NotificationBell initialUnread={unreadCount} direction="up" />
               <ThemeToggle />
             </span>
           </div>

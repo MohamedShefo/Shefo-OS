@@ -133,6 +133,51 @@ export async function restoreItem(
   }
 }
 
+/**
+ * Lazy 30-day trash auto-purge (no cron). Called once per shell load.
+ * Permanently deletes items whose deleted_at is older than 30 days.
+ */
+export async function purgeExpiredTrash(): Promise<number> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) return 0;
+
+    const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    let purged = 0;
+
+    for (const table of Object.values(TRASH_TABLES)) {
+      const { data, error } = await supabase
+        .from(table)
+        .select('id')
+        .eq('user_id', user.id)
+        .not('deleted_at', 'is', null)
+        .lte('deleted_at', cutoff)
+        .limit(100);
+      if (error || !data || data.length === 0) continue;
+      const ids = (data as Array<{ id: string }>).map((r) => r.id);
+      const { error: deleteError } = await supabase
+        .from(table)
+        .delete()
+        .eq('user_id', user.id)
+        .in('id', ids);
+      if (!deleteError) purged += ids.length;
+    }
+
+    if (purged > 0) {
+      revalidatePath('/trash');
+      revalidatePath('/');
+    }
+    return purged;
+  } catch (err) {
+    console.error('Unexpected error in purgeExpiredTrash:', err);
+    return 0;
+  }
+}
+
 export async function permanentlyDeleteItem(
   entityType: TrashEntityType,
   id: string

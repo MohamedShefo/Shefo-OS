@@ -28,6 +28,9 @@ export async function getProfile(): Promise<Profile | null> {
       console.error('Error fetching profile:', error.message || error);
       return null;
     }
+    if (data && !data.avatar_url) {
+      console.warn('Profile row has no avatar_url for user', ctx.user.id);
+    }
     return (data as Profile) || null;
   } catch (err) {
     console.error('Unexpected error in getProfile:', err);

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   deleteNotification,
   getRecentNotifications,
@@ -17,6 +18,24 @@ export function NotificationBell({ initialUnread }: { initialUnread: number }) {
   const [unread, setUnread] = useState(initialUnread);
   const [loading, setLoading] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const pathname = usePathname();
+
+  // Close on route change (adjust state during render — React-recommended pattern)
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
+    setOpen(false);
+  }
+
+  // Close on Escape
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open]);
 
   const toggle = () => {
     const next = !open;
@@ -84,8 +103,8 @@ export function NotificationBell({ initialUnread }: { initialUnread: number }) {
       {open && (
         <>
           <div className="fixed inset-0 z-[70]" onClick={() => setOpen(false)} aria-hidden="true" />
-          <div className="fixed inset-0 z-[71] flex items-center justify-center p-4">
-            <div className="w-full max-w-sm rounded-xl border border-border bg-card p-3 shadow-lg animate-in fade-in zoom-in-95 duration-150 max-h-[80vh] overflow-y-auto">
+          <div className="absolute end-0 top-10 z-[71] md:top-auto md:bottom-10">
+            <div className="w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-card p-3 shadow-lg animate-in fade-in zoom-in-95 duration-150 max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between px-1 pb-2">
               <p className="text-xs font-semibold text-foreground">Notifications</p>
               <Button

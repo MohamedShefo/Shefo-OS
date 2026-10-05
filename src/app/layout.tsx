@@ -35,7 +35,7 @@ export default function RootLayout({
       lang={lang}
       dir={dir}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-      style={{ colorScheme: 'dark' }}
+      style={{ colorScheme: 'light' }}
       suppressHydrationWarning
     >
       <head>

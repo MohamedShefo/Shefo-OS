@@ -14,6 +14,12 @@ const SIZES = {
   lg: 'h-20 w-20 text-2xl',
 } as const;
 
+const DIMENSIONS = {
+  sm: { width: 28, height: 28 },
+  md: { width: 36, height: 36 },
+  lg: { width: 80, height: 80 },
+} as const;
+
 export function initialsOf(name?: string | null, email?: string | null): string {
   const source = (name ?? '').trim() || (email ?? '').trim();
   if (!source) return 'S';
@@ -32,6 +38,8 @@ export function Avatar({ src, name, email, size = 'md', className }: AvatarProps
       <img
         src={src}
         alt={name || email || 'Profile'}
+        width={DIMENSIONS[size].width}
+        height={DIMENSIONS[size].height}
         className={cn('rounded-full object-cover bg-muted', SIZES[size], className)}
       />
     );

@@ -5,6 +5,8 @@ import { removeAvatar, updateProfile, uploadAvatar } from '../actions';
 import type { Profile } from '@/types/database';
 import { Button } from '@/components/ui/button';
 import { Avatar } from './avatar';
+import { AccentPicker } from './accent-picker';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 interface ProfileEditorProps {
   profile: Profile | null;
@@ -89,6 +91,14 @@ export function ProfileEditor({ profile, email }: ProfileEditorProps) {
             )}
           </div>
         </div>
+      </section>
+
+      <section className="rounded-xl border border-border bg-card p-5 shadow-xs space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold tracking-tight text-foreground">Appearance</h2>
+          <ThemeToggle />
+        </div>
+        <AccentPicker />
       </section>
 
       <section className="rounded-xl border border-border bg-card p-5 shadow-xs">

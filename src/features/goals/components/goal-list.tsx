@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/common/empty-state';
 import { SearchField } from '@/components/common/search-field';
 import { matchesQuery } from '@/lib/search';
 import { ProgressBar } from '../progress';
+import { GoalDialog } from './goal-dialog';
 
 interface GoalListProps {
   initialGoals: Goal[];
@@ -22,6 +23,7 @@ export function GoalList({ initialGoals, progressByGoal }: GoalListProps) {
   const [filter, setFilter] = useState<(typeof STATUS_TABS)[number]>('all');
   const [search, setSearch] = useState('');
   const [isPending, startTransition] = useTransition();
+  const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
 
   const visible = initialGoals.filter((g) => {
     if (filter !== 'all' && g.status !== filter) return false;
@@ -108,7 +110,16 @@ export function GoalList({ initialGoals, progressByGoal }: GoalListProps) {
                     </p>
                   )}
                 </div>
-                <div className="flex items-center justify-end pt-4 mt-4 border-t border-border/50">
+                <div className="flex items-center justify-end gap-1 pt-4 mt-4 border-t border-border/50">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setEditingGoal(g)}
+                    disabled={isPending}
+                    className="h-7 px-2 text-[11px] text-muted-foreground hover:text-foreground"
+                  >
+                    Edit
+                  </Button>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -123,6 +134,15 @@ export function GoalList({ initialGoals, progressByGoal }: GoalListProps) {
             );
           })}
         </div>
+      )}
+
+      {editingGoal && (
+        <GoalDialog
+          goal={editingGoal}
+          buttonLabel="Edit"
+          dialogTitle="Edit Goal"
+          onSuccess={() => setEditingGoal(null)}
+        />
       )}
     </div>
   );

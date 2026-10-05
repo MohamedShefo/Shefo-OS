@@ -41,7 +41,7 @@ export default function RootLayout({
       <head>
         {/* Persisted theme applied before first paint (default: dark). */}
         <Script id="shefo-theme" strategy="beforeInteractive">
-          {`(function(){try{var t=localStorage.getItem('shefo:theme');var d=t? t==='dark' : true;document.documentElement.classList.toggle('dark',d);document.documentElement.style.colorScheme=d?'dark':'light';}catch(e){}})();`}
+          {`(function(){try{var t=localStorage.getItem('shefo:theme');var d=t? t==='dark' : !window.matchMedia('(prefers-color-scheme: light)').matches;document.documentElement.classList.toggle('dark',d);document.documentElement.style.colorScheme=d?'dark':'light';}catch(e){}})();`}
         </Script>
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">{children}</body>

@@ -46,7 +46,7 @@ export function useDraggable(storageKey?: string) {
     (e: React.PointerEvent<HTMLElement>) => {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
       const target = e.target as HTMLElement;
-      if (target.closest('button, input, textarea, select, a, [data-no-drag]')) return;
+      if (target.closest('input, textarea, select, a, [data-no-drag]')) return;
       const rect = e.currentTarget.getBoundingClientRect();
       gesture.current = {
         pointerId: e.pointerId,
